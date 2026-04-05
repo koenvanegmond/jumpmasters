@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(node -e \"const m = require\\(''multer''\\); console.log\\(Object.keys\\(m\\)\\)\")",
+      "Bash(npm run:*)",
+      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(48\\).toString\\(''hex''\\)\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3001)",
+      "Bash(findstr LISTENING)",
+      "Bash(taskkill /PID 38872 /F)",
+      "Bash(cmd.exe /c \"taskkill /PID 38872 /F\")",
+      "Bash(cmd.exe /c \"taskkill /PID 38872 /F 2>&1\")",
+      "Bash(cmd.exe /c \"echo. >> \"\"C:\\\\Users\\\\Koen van Egmond\\\\Documents\\\\JUMPMASTERS\\\\backend\\\\src\\\\server.js\"\"\")",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :3001 | findstr LISTENING\")",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe 2>&1\")",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :3001\")",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host ''Done''\")",
+      "Bash(curl -s http://localhost:3002/api/health)",
+      "Bash(curl -s http://localhost:3002/api/leaderboard/overall)",
+      "Bash(dir \"C:\\\\Users\\\\Koen van Egmond\\\\Documents\\\\JUMPMASTERS\\\\frontend\\\\public\")",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\Koen van Egmond\\\\Documents\\\\JUMPMASTERS\\\\frontend\\\\public'' -ErrorAction SilentlyContinue | Select-Object Name\")",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(curl -s http://localhost:3002/api/going/today)"
+    ]
+  }
+}
