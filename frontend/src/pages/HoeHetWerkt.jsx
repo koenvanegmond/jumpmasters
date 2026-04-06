@@ -68,19 +68,19 @@ export default function HoeHetWerkt() {
           {
             nr: 2,
             tekst: 'Klik op het deel-icoontje (de drie verbonden bolletjes) onder je sessie-samenvatting, direct naast het hartje.',
-            img: '/stap2.png',
+            img: '/stap2.PNG',
             alt: 'Surfr app — deel-icoontje',
           },
           {
             nr: 3,
             tekst: "Kies voor 'Save Image' of 'Opslaan' om de officiële samenvatting in je galerij te zetten.",
-            img: '/stap3.png',
+            img: '/stap3.PNG',
             alt: 'Surfr app — opslaan',
           },
           {
             nr: 4,
             tekst: 'Ga naar de Jump Masters website en upload dit bestand.',
-            img: '/stap4.png',
+            img: '/stap4.PNG',
             alt: 'Jump Masters — uploaden',
           },
         ].map(({ nr, tekst, img, alt }) => (
