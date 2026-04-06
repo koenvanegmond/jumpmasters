@@ -67,7 +67,7 @@ export default function HoeHetWerkt() {
           },
           {
             nr: 2,
-            tekst: 'Scroll naar je sessie en klik onderin op het share-icoontje — dat zijn drie bolletjes verbonden met lijntjes (↗). Je vindt het naast het hartje, helemaal onderaan de sessiekaart.',
+            tekst: 'Scroll naar je sessie en klik onderin op het share-icoontje. Je vindt het naast het hartje, helemaal onderaan de sessiekaart.',
             img: '/stap2.PNG',
             alt: 'Surfr app — deel-icoontje',
           },
