@@ -59,9 +59,10 @@ async function extractSurfrData(imageBuffer) {
 
   // ── Airtime ───────────────────────────────────────────────────────────────
   // Dutch: "Max vliegtijd" / "Max. airtime"
+  // Note: OCR sometimes reads "s" as "@" or other chars — so we just grab the number after the label
   const airtimeMatch =
-    fullText.match(/(?:Max\.?\s*vliegtijd|Max\.?\s*airtime)[^\d]*(\d+[.,]?\d*)\s*s/i) ||
-    fullText.match(/(\d+[.,]?\d*)\s*s[^\n]*\n[^\n]*(?:vliegtijd|airtime)/i);
+    fullText.match(/(?:Max\.?\s*vliegtijd|Max\.?\s*airtime)[^\d]*(\d+[.,]?\d*)/i) ||
+    fullText.match(/(\d+[.,]?\d*)\s*[s@][^\n]*\n[^\n]*(?:vliegtijd|airtime)/i);
 
   // ── Distance ──────────────────────────────────────────────────────────────
   // Dutch: "Max afstand" / "Max. afstand"
