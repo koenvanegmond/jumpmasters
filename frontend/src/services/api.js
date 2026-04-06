@@ -55,6 +55,15 @@ export const api = {
   createNews: (body) => request('/news', { method: 'POST', body: JSON.stringify(body) }),
   deleteNews: (id) => request(`/news/${id}`, { method: 'DELETE' }),
 
+  // Social
+  toggleLike: (sessionId) => request(`/social/like/${sessionId}`, { method: 'POST' }),
+  getLikes: (sessionId) => request(`/social/likes/${sessionId}`),
+  getComments: (sessionId) => request(`/social/comments/${sessionId}`),
+  postComment: (sessionId, content) => request(`/social/comment/${sessionId}`, { method: 'POST', body: JSON.stringify({ content }) }),
+  deleteComment: (commentId) => request(`/social/comment/${commentId}`, { method: 'DELETE' }),
+  getNotifications: () => request('/social/notifications'),
+  markNotificationsRead: () => request('/social/notifications/read', { method: 'PATCH' }),
+
   // Admin
   adminPending: () => request('/admin/sessions/pending'),
   adminVerify: (id, verified) => request(`/admin/sessions/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ verified }) }),

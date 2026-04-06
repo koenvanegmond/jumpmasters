@@ -40,7 +40,7 @@ export default function Signup({ onLogin }) {
           <div>
             <label className="block text-sm font-medium text-white mb-1.5">Volledige naam</label>
             <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-              className="input" placeholder="Koen van Egmond" />
+              className="input" placeholder="Jouw naam" />
           </div>
           <div>
             <label className="block text-sm font-medium text-white mb-1.5">E-mailadres</label>

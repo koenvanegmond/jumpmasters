@@ -11,6 +11,7 @@ const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const newsRoutes = require('./routes/news');
 const goingRoutes = require('./routes/going');
+const socialRoutes = require('./routes/social');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/going', goingRoutes);
+app.use('/api/social', socialRoutes);
 
 // Apply rate limiting to upload endpoint
 app.use('/api/sessions/upload', uploadLimiter);

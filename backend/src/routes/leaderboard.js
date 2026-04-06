@@ -20,9 +20,9 @@ async function buildLeaderboard(whereClause, params) {
     const verified = sessions.filter(s => s.verified);
 
     const total_points = calculateTotalPoints(sessions);
-    const max_height = verified.length
-      ? Math.max(...verified.map(s => parseFloat(s.height_m)))
-      : 0;
+    const max_height    = verified.length ? Math.max(...verified.map(s => parseFloat(s.height_m)))   : 0;
+    const max_airtime   = verified.length ? Math.max(...verified.map(s => parseFloat(s.airtime_s)))  : 0;
+    const max_distance  = verified.length ? Math.max(...verified.map(s => parseFloat(s.distance_m))) : 0;
 
     return {
       user_id: user.id,
@@ -31,7 +31,9 @@ async function buildLeaderboard(whereClause, params) {
       avatar_url: user.avatar_url,
       total_points,
       sessions_count: verified.length,
-      max_height
+      max_height,
+      max_airtime,
+      max_distance
     };
   }));
 

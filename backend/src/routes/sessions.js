@@ -32,13 +32,21 @@ async function updateUserFleet(userId) {
   await pool.query('UPDATE users SET fleet = $1 WHERE id = $2', [fleet, userId]);
 }
 
-async function saveTags(sessionId, taggedUserIds) {
+async function saveTags(sessionId, taggedUserIds, taggerName, taggerId) {
   if (!taggedUserIds || taggedUserIds.length === 0) return;
   for (const uid of taggedUserIds) {
     await pool.query(
       'INSERT INTO session_tags (session_id, tagged_user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
       [sessionId, uid]
     );
+    if (uid !== taggerId) {
+      await pool.query(
+        `INSERT INTO notifications (user_id, from_user_id, type, session_id, message)
+         VALUES ($1, $2, 'tag', $3, $4)
+         ON CONFLICT DO NOTHING`,
+        [uid, taggerId, sessionId, `${taggerName} heeft jou getagd in een sessie`]
+      ).catch(() => {});
+    }
   }
 }
 
@@ -79,7 +87,7 @@ router.post('/confirm', authenticate, upload.single('media'), async (req, res) =
     );
     const session = result.rows[0];
     const tagIds = tagged_user_ids ? JSON.parse(tagged_user_ids) : [];
-    await saveTags(session.id, tagIds);
+    await saveTags(session.id, tagIds, req.user.name, req.user.id);
     await updateUserFleet(req.user.id);
     res.status(201).json({ session });
   } catch (err) {
@@ -112,7 +120,7 @@ router.post('/manual', authenticate, upload.single('media'), async (req, res) =>
     );
     const session = result.rows[0];
     const tagIds = tagged_user_ids ? JSON.parse(tagged_user_ids) : [];
-    await saveTags(session.id, tagIds);
+    await saveTags(session.id, tagIds, req.user.name, req.user.id);
     await updateUserFleet(req.user.id);
     res.status(201).json({ session });
   } catch (err) {

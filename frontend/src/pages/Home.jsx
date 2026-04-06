@@ -118,21 +118,24 @@ export default function Home({ user }) {
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
                     <span className="text-[11px] text-jm-pink flex items-center gap-1">
                       <IconHeight className="w-3 h-3" />
-                      {parseFloat(entry.max_height).toFixed(1)}m
+                      {entry.max_height > 0 ? `${parseFloat(entry.max_height).toFixed(1)}m` : '—'}
                     </span>
                     <span className="text-[11px] text-sky-400 flex items-center gap-1">
                       <IconAirtime className="w-3 h-3" />
-                      {parseFloat(entry.max_airtime).toFixed(1)}s
+                      {entry.max_airtime > 0 ? `${parseFloat(entry.max_airtime).toFixed(1)}s` : '—'}
                     </span>
                     <span className="text-[11px] text-violet-400 flex items-center gap-1">
                       <IconDistance className="w-3 h-3" />
-                      {parseFloat(entry.max_distance).toFixed(0)}m
+                      {entry.max_distance > 0 ? `${parseFloat(entry.max_distance).toFixed(0)}m` : '—'}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <FleetBadge fleet={entry.fleet} />
-                  <span className="font-black text-jm-pink text-base">{parseFloat(entry.total_points).toFixed(2)}</span>
+                  <div className="text-right">
+                    <div className="font-black text-jm-pink text-base leading-tight">{parseFloat(entry.total_points).toFixed(2)}</div>
+                    <div className="text-[10px] text-jm-muted">punten</div>
+                  </div>
                 </div>
               </Link>
             ))}
