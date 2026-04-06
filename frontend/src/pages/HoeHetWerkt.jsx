@@ -67,7 +67,7 @@ export default function HoeHetWerkt() {
           },
           {
             nr: 2,
-            tekst: 'Klik op het deel-icoontje (de drie verbonden bolletjes) onder je sessie-samenvatting, direct naast het hartje.',
+            tekst: 'Scroll naar je sessie en klik onderin op het share-icoontje — dat zijn drie bolletjes verbonden met lijntjes (↗). Je vindt het naast het hartje, helemaal onderaan de sessiekaart.',
             img: '/stap2.PNG',
             alt: 'Surfr app — deel-icoontje',
           },
@@ -84,16 +84,17 @@ export default function HoeHetWerkt() {
             alt: 'Jump Masters — uploaden',
           },
         ].map(({ nr, tekst, img, alt }) => (
-          <div key={nr} className="card p-5 flex flex-col sm:flex-row gap-5 items-start">
-            <div className="flex-shrink-0 flex items-center gap-4 sm:gap-0 sm:flex-col sm:items-center">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0"
+          <div key={nr} className="card p-5 flex flex-row gap-5 items-center">
+            {/* Left: number badge + optional image */}
+            <div className="flex-shrink-0 flex flex-col items-center gap-2">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm"
                 style={{ background: 'var(--jm-pink)', color: 'white' }}>
                 {nr}
               </div>
               {img && (
-                <div className="sm:mt-3 w-28 sm:w-32 flex-shrink-0">
+                <div className="w-32 flex-shrink-0">
                   <img src={img} alt={alt}
-                    className="w-full rounded-xl border border-white/10 object-cover"
+                    className="w-full rounded-xl border border-white/10 object-contain"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
@@ -105,7 +106,8 @@ export default function HoeHetWerkt() {
                 </div>
               )}
             </div>
-            <p className="text-white/90 text-sm leading-relaxed pt-1">{tekst}</p>
+            {/* Right: text vertically centered */}
+            <p className="text-white/90 text-sm leading-relaxed">{tekst}</p>
           </div>
         ))}
 
