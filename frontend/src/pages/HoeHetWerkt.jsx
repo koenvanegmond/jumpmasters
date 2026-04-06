@@ -5,9 +5,9 @@ export default function HoeHetWerkt() {
       {/* Hero */}
       <div className="text-center space-y-3">
         <div className="text-5xl mb-2">🏄‍♂️</div>
-        <h1 className="text-3xl font-black text-white">Jump Masters – Skuytevaert</h1>
+        <h1 className="text-3xl font-black text-white">Jump Masters</h1>
         <p className="text-jm-muted text-base max-w-xl mx-auto leading-relaxed">
-          Jump Masters is de interne kitesurf competitie van de Skuytevaert community.
+          Jump Masters is de interne kitesurf competitie van Skuytevaert.
           Hier draait alles om fun, progressie en gezonde competitie op het water.
           Upload je beste sessies en zie direct hoe jij scoort ten opzichte van de andere leden.
         </p>
