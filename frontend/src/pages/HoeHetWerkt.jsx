@@ -62,8 +62,8 @@ export default function HoeHetWerkt() {
           {
             nr: 1,
             tekst: 'Open de Surfr app en ga naar de sessie die je wilt uploaden.',
-            img: '/stap1.png',
-            alt: 'Surfr app — sessie selecteren',
+            img: null,
+            alt: null,
           },
           {
             nr: 2,
@@ -90,19 +90,20 @@ export default function HoeHetWerkt() {
                 style={{ background: 'var(--jm-pink)', color: 'white' }}>
                 {nr}
               </div>
-              {/* phone screenshot */}
-              <div className="sm:mt-3 w-28 sm:w-32 flex-shrink-0">
-                <img src={img} alt={alt}
-                  className="w-full rounded-xl border border-white/10 object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }} />
-                <div className="hidden w-full aspect-[9/16] rounded-xl border border-dashed border-white/20 items-center justify-center"
-                  style={{ background: 'rgba(255,255,255,0.03)' }}>
-                  <span className="text-jm-muted text-xs text-center px-2">Foto volgt<br />binnenkort</span>
+              {img && (
+                <div className="sm:mt-3 w-28 sm:w-32 flex-shrink-0">
+                  <img src={img} alt={alt}
+                    className="w-full rounded-xl border border-white/10 object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }} />
+                  <div className="hidden w-full aspect-[9/16] rounded-xl border border-dashed border-white/20 items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    <span className="text-jm-muted text-xs text-center px-2">Foto volgt<br />binnenkort</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
             <p className="text-white/90 text-sm leading-relaxed pt-1">{tekst}</p>
           </div>
