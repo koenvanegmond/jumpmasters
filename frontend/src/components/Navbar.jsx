@@ -63,6 +63,7 @@ export default function Navbar({ user, onLogout }) {
             <NavLink to="/wind" className={linkCls}>Wind</NavLink>
             <NavLink to="/ranglijst" className={linkCls}>Ranglijst</NavLink>
             <NavLink to="/nieuws" className={linkCls}>Nieuws</NavLink>
+            <NavLink to="/hoe-het-werkt" className={linkCls}>Hoe het werkt</NavLink>
             {user && <NavLink to="/uploaden" className={linkCls}>Uploaden</NavLink>}
             {user?.is_admin && <NavLink to="/beheer" className={linkCls}>Beheer</NavLink>}
           </div>
@@ -153,6 +154,7 @@ export default function Navbar({ user, onLogout }) {
           <NavLink to="/wind" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Wind</NavLink>
           <NavLink to="/ranglijst" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Ranglijst</NavLink>
           <NavLink to="/nieuws" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Nieuws</NavLink>
+          <NavLink to="/hoe-het-werkt" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Hoe het werkt</NavLink>
           {user && <NavLink to="/uploaden" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Uploaden</NavLink>}
           {user?.is_admin && <NavLink to="/beheer" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Beheer</NavLink>}
           {user ? (

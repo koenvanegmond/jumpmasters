@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Feed from './pages/Feed';
 import Nieuws from './pages/Nieuws';
+import HoeHetWerkt from './pages/HoeHetWerkt';
 import Wind from './pages/Wind';
 import Leaderboards from './pages/Leaderboards';
 import Upload from './pages/Upload';
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="/wind" element={<Wind user={user} />} />
             <Route path="/nieuws" element={<Nieuws user={user} />} />
             <Route path="/ranglijst" element={<Leaderboards />} />
+            <Route path="/hoe-het-werkt" element={<HoeHetWerkt />} />
             <Route path="/inloggen" element={<Login onLogin={setUser} />} />
             <Route path="/registreren" element={<Signup onLogin={setUser} />} />
             <Route path="/rijder/:id" element={<PublicProfile />} />
