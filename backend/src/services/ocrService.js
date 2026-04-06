@@ -7,13 +7,32 @@ function getClient() {
   if (!client) {
     // Production: pass credentials as JSON string in env var
     if (process.env.GOOGLE_CREDENTIALS_JSON) {
-      const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
-      if (credentials.private_key) credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+      let raw = process.env.GOOGLE_CREDENTIALS_JSON;
+      // Some platforms double-escape backslashes — fix that
+      // Also handle case where the entire JSON was wrapped in extra quotes
+      if (raw.startsWith('"') && raw.endsWith('"')) {
+        try { raw = JSON.parse(raw); } catch {}
+      }
+      let credentials;
+      try {
+        credentials = JSON.parse(raw);
+      } catch (parseErr) {
+        console.error('GOOGLE_CREDENTIALS_JSON is not valid JSON:', parseErr.message);
+        throw new Error('OCR configuratiefout — neem contact op met de beheerder');
+      }
+      if (credentials.private_key) {
+        credentials.private_key = credentials.private_key
+          .replace(/\\n/g, '\n')   // handle escaped newlines from env var
+          .replace(/\\r/g, '');    // strip any carriage returns
+      }
+      console.log('Vision client init — project_id:', credentials.project_id, '| key starts with:', credentials.private_key?.slice(0, 30));
       client = new vision.ImageAnnotatorClient({ credentials });
-    } else {
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       client = new vision.ImageAnnotatorClient({
         keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
       });
+    } else {
+      throw new Error('Geen Google credentials gevonden — stel GOOGLE_CREDENTIALS_JSON in op Render');
     }
   }
   return client;

@@ -17,14 +17,16 @@ export default function UploadZone({ onFile }) {
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`cursor-pointer border-2 border-dashed rounded-2xl p-12 text-center transition-colors ${
-        dragging ? 'border-jm-pink bg-pink-50' : 'border-gray-300 hover:border-jm-pink hover:bg-pink-50'
-      }`}
+      className="cursor-pointer rounded-2xl p-10 text-center transition-all"
+      style={{
+        border: `2px dashed ${dragging ? 'var(--jm-pink)' : 'rgba(255,255,255,0.15)'}`,
+        background: dragging ? 'rgba(232,25,106,0.06)' : 'rgba(255,255,255,0.02)',
+      }}
     >
       <div className="text-5xl mb-4">📸</div>
-      <p className="text-lg font-bold text-gray-800">Sleep je Surfr-screenshot hierheen</p>
-      <p className="text-sm text-gray-400 mt-1">of klik om te bladeren — JPEG / PNG, max 5MB</p>
-      <input ref={inputRef} type="file" accept="image/jpeg,image/png" className="hidden"
+      <p className="text-base font-bold text-white">Sleep je Surfr-screenshot hierheen</p>
+      <p className="text-sm mt-1" style={{ color: 'var(--jm-muted)' }}>of klik om te bladeren — JPEG / PNG, max 5MB</p>
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/jpg" className="hidden"
         onChange={(e) => e.target.files[0] && onFile(e.target.files[0])} />
     </div>
   );

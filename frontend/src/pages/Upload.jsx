@@ -91,7 +91,9 @@ export default function Upload() {
       });
       setStep('confirm');
     } catch (err) {
-      setError(err.message);
+      // OCR failed — silently fall back to manual entry
+      setError('Automatisch uitlezen is niet gelukt. Vul de gegevens hieronder zelf in.');
+      setForm({ date: new Date().toISOString().split('T')[0], height: '', airtime: '', distance: '' });
       setStep('manual');
     }
   }

@@ -43,7 +43,7 @@ export default function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home user={user} />} />
-            <Route path="/feed" element={<Feed />} />
+            <Route path="/feed" element={<Feed user={user} />} />
             <Route path="/wind" element={<Wind user={user} />} />
             <Route path="/nieuws" element={<Nieuws user={user} />} />
             <Route path="/ranglijst" element={<Leaderboards />} />
