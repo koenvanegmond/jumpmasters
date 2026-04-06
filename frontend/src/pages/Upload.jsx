@@ -91,10 +91,10 @@ export default function Upload() {
       });
       setStep('confirm');
     } catch (err) {
-      // OCR failed — silently fall back to manual entry
-      setError('Automatisch uitlezen is niet gelukt. Vul de gegevens hieronder zelf in.');
-      setForm({ date: new Date().toISOString().split('T')[0], height: '', airtime: '', distance: '' });
-      setStep('manual');
+      // OCR failed — go back to idle so user must upload a valid screenshot
+      setError('Kon de gegevens niet uitlezen uit deze foto. Zorg dat je een duidelijke Surfr-screenshot uploadt.');
+      setPreview(null);
+      setStep('idle');
     }
   }
 
@@ -117,7 +117,7 @@ export default function Upload() {
       navigate('/profiel');
     } catch (err) {
       setError(err.message);
-      setStep(screenshotUrl ? 'confirm' : 'manual');
+      setStep('confirm');
     }
   }
 
@@ -128,20 +128,12 @@ export default function Upload() {
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-black text-white mb-1">Sessie uploaden</h1>
-      <p className="text-jm-muted text-sm mb-6">Upload je Surfr-screenshot — we extraheren de gegevens automatisch.</p>
+      <p className="text-jm-muted text-sm mb-6">Upload je Surfr-screenshot als bewijs — we lezen de gegevens automatisch uit.</p>
 
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>}
 
       {step === 'idle' && (
-        <>
-          <UploadZone onFile={handleScreenshot} />
-          <div className="text-center mt-4">
-            <button onClick={() => { setStep('manual'); setForm({ date: new Date().toISOString().split('T')[0], height: '', airtime: '', distance: '' }); }}
-              className="text-sm text-jm-pink hover:underline">
-              Gegevens handmatig invoeren
-            </button>
-          </div>
-        </>
+        <UploadZone onFile={handleScreenshot} />
       )}
 
       {step === 'processing' && (
@@ -152,16 +144,14 @@ export default function Upload() {
         </div>
       )}
 
-      {(step === 'confirm' || step === 'manual' || step === 'submitting') && (
+      {(step === 'confirm' || step === 'submitting') && (
         <form onSubmit={handleSubmit} className="card p-6 space-y-5">
-          {preview && step === 'confirm' && (
+          {preview && (
             <img src={preview} alt="Screenshot" className="w-full rounded-xl max-h-40 object-contain border border-white/[0.07]" />
           )}
-          {step === 'confirm' && (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
-              Gegevens succesvol geextraheerd — controleer en bevestig
-            </div>
-          )}
+          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
+            ✓ Screenshot uitgelezen — controleer de gegevens en pas aan als er een foutje zit
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-white mb-1.5">Datum</label>
@@ -214,9 +204,9 @@ export default function Upload() {
           <button type="submit" disabled={step === 'submitting'} className="btn-primary w-full justify-center disabled:opacity-60">
             {step === 'submitting' ? 'Opslaan...' : 'Sessie opslaan'}
           </button>
-          <button type="button" onClick={() => { setStep('idle'); setScreenshotUrl(''); setPreview(null); }}
+          <button type="button" onClick={() => { setStep('idle'); setScreenshotUrl(''); setPreview(null); setError(''); }}
             className="w-full text-sm text-jm-muted hover:text-white transition-colors text-center">
-            Opnieuw beginnen
+            ← Andere screenshot uploaden
           </button>
         </form>
       )}
