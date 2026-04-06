@@ -45,7 +45,7 @@ export default function Navbar({ user, onLogout }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <img src="/logo-full1.PNG" alt="JumpMasters" className="h-8"
+            <img src="/logo-text.png" alt="JumpMasters" className="h-8"
               onError={(e) => {
                 e.target.style.display = 'none';
                 document.getElementById('jm-logo-fallback').style.display = 'flex';
