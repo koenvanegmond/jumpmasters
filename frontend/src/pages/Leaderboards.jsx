@@ -5,7 +5,7 @@ import LeaderboardTable from '../components/LeaderboardTable';
 const KLASSEN = ['Vandaag', 'Algeheel', 'Bronze', 'Silver', 'Gold', 'Platinum'];
 
 const ONDERTITELS = {
-  Vandaag: 'Alle sessies van vandaag tellen mee',
+  Vandaag: 'Je 5 beste sessies van vandaag tellen mee',
   Algeheel: 'Top 5 sessies tellen mee voor het eindklassement',
 };
 

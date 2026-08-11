@@ -54,39 +54,51 @@ router.get('/overall', async (req, res) => {
 });
 
 // GET /api/leaderboard/daily — alleen de sessies van vandaag
-// Anders dan het seizoensklassement tellen hier álle sessies van vandaag mee,
-// niet je beste vijf. Wie vandaag het hardst gaat, staat bovenaan.
+// Puntentelling volgt exact dezelfde regel als het seizoensklassement: je
+// beste vijf sessies tellen mee, de rest niet. Daarom draait dit door
+// calculateTotalPoints heen en niet door een SUM in SQL — zo kan de regel
+// niet uiteenlopen tussen de twee klassementen.
 router.get('/daily', async (req, res) => {
   try {
     // Datum bepalen in Nederlandse tijd — de server draait op UTC, waardoor
     // 's avonds laat anders de verkeerde dag gepakt zou worden.
     const result = await pool.query(
-      `SELECT u.id AS user_id, u.name, u.fleet, u.avatar_url,
-              ROUND(SUM(s.points)::numeric, 2) AS total_points,
-              COUNT(*)::int                    AS sessions_count,
-              MAX(s.height_m)                  AS max_height,
-              MAX(s.airtime_s)                 AS max_airtime,
-              MAX(s.distance_m)                AS max_distance
+      `SELECT s.points, s.height_m, s.airtime_s, s.distance_m, s.verified,
+              u.id AS user_id, u.name, u.fleet, u.avatar_url
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.verified = true
-         AND s.date = (NOW() AT TIME ZONE 'Europe/Amsterdam')::date
-       GROUP BY u.id, u.name, u.fleet, u.avatar_url
-       ORDER BY total_points DESC`
+         AND s.date = (NOW() AT TIME ZONE 'Europe/Amsterdam')::date`
     );
 
-    const data = result.rows.map((row, index) => ({
-      rank: index + 1,
-      user_id: row.user_id,
-      name: row.name,
-      fleet: row.fleet,
-      avatar_url: row.avatar_url,
-      total_points: parseFloat(row.total_points),
-      sessions_count: row.sessions_count,
-      max_height: parseFloat(row.max_height),
-      max_airtime: parseFloat(row.max_airtime),
-      max_distance: parseFloat(row.max_distance)
-    }));
+    const perRijder = new Map();
+    for (const row of result.rows) {
+      if (!perRijder.has(row.user_id)) {
+        perRijder.set(row.user_id, {
+          user_id: row.user_id, name: row.name,
+          fleet: row.fleet, avatar_url: row.avatar_url, sessions: []
+        });
+      }
+      perRijder.get(row.user_id).sessions.push(row);
+    }
+
+    const data = [...perRijder.values()]
+      .map((r) => ({
+        user_id: r.user_id,
+        name: r.name,
+        fleet: r.fleet,
+        avatar_url: r.avatar_url,
+        // Beste vijf van vandaag — zelfde functie als het seizoensklassement.
+        total_points: calculateTotalPoints(r.sessions),
+        // Aantal en records gaan wél over alle sessies van vandaag: je beste
+        // sprong blijft je beste sprong, ook als hij niet meetelt voor punten.
+        sessions_count: r.sessions.length,
+        max_height:   Math.max(...r.sessions.map(s => parseFloat(s.height_m))),
+        max_airtime:  Math.max(...r.sessions.map(s => parseFloat(s.airtime_s))),
+        max_distance: Math.max(...r.sessions.map(s => parseFloat(s.distance_m)))
+      }))
+      .sort((a, b) => b.total_points - a.total_points)
+      .map((entry, index) => ({ rank: index + 1, ...entry }));
 
     res.json(data);
   } catch (err) {
