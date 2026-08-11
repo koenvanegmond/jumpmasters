@@ -38,6 +38,14 @@ function getClient() {
   return client;
 }
 
+// Een sessiedatum is een kale dag, geen moment in de tijd. Bouwen we hem met
+// new Date(jaar, maand, dag), dan is dat middernacht Nederlandse tijd, en
+// schuift toISOString() hem in de zomer twee uur terug — naar de dag ervoor.
+// Middernacht UTC houdt de dag heel, waar de server ook staat.
+function kaleDatum(jaar, maandIndex, dag) {
+  return new Date(Date.UTC(jaar, maandIndex, dag));
+}
+
 async function extractSurfrData(imageBuffer) {
   let detections;
   try {
@@ -85,14 +93,24 @@ async function extractSurfrData(imageBuffer) {
   // ── Date ──────────────────────────────────────────────────────────────────
   // Dutch format: "18 sep 2025" or "18 sep 2025 18:06"
   const DUTCH_MONTHS = { jan:0, feb:1, mrt:2, apr:3, mei:4, jun:5, jul:6, aug:7, sep:8, okt:9, nov:10, dec:11 };
-  let date = new Date();
+
+  const nu = new Date();
+  let date = kaleDatum(nu.getFullYear(), nu.getMonth(), nu.getDate());
+
   const dutchDateMatch = fullText.match(/(\d{1,2})\s+(jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)\s+(\d{4})/i);
   if (dutchDateMatch) {
-    date = new Date(parseInt(dutchDateMatch[3]), DUTCH_MONTHS[dutchDateMatch[2].toLowerCase()], parseInt(dutchDateMatch[1]));
+    date = kaleDatum(
+      parseInt(dutchDateMatch[3]),
+      DUTCH_MONTHS[dutchDateMatch[2].toLowerCase()],
+      parseInt(dutchDateMatch[1])
+    );
   } else {
     // English fallback: "03 Nov 2025"
     const engDateMatch = fullText.match(/(\d{2} [A-Z][a-z]{2} \d{4})/);
-    if (engDateMatch) date = new Date(engDateMatch[1]);
+    if (engDateMatch) {
+      const d = new Date(engDateMatch[1]);
+      if (!isNaN(d)) date = kaleDatum(d.getFullYear(), d.getMonth(), d.getDate());
+    }
   }
 
   // ── Location ─────────────────────────────────────────────────────────────

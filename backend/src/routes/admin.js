@@ -100,7 +100,8 @@ router.get('/stats', async (req, res) => {
       pool.query(
         `SELECT MAX(height_m) AS max_height, u.name
          FROM sessions s JOIN users u ON u.id = s.user_id
-         WHERE s.date = CURRENT_DATE AND s.verified = true
+         WHERE s.date = (NOW() AT TIME ZONE 'Europe/Amsterdam')::date
+           AND s.verified = true
          GROUP BY u.name
          ORDER BY MAX(height_m) DESC
          LIMIT 1`
