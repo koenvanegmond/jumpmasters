@@ -16,7 +16,14 @@ async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
 
-  if (!res.ok) throw new Error(data.error || `Fout: ${res.status}`);
+  if (!res.ok) {
+    // Statuscode meegeven, zodat aanroepers onderscheid kunnen maken tussen
+    // bijvoorbeeld een onleesbare foto (422) en een storing (503).
+    const fout = new Error(data.error || `Fout: ${res.status}`);
+    fout.status = res.status;
+    fout.data = data;
+    throw fout;
+  }
   return data;
 }
 

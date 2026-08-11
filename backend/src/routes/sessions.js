@@ -59,7 +59,12 @@ router.post('/upload', authenticate, screenshotUpload.single('screenshot'), asyn
     res.json({ extracted, screenshot_url });
   } catch (err) {
     console.error(err);
-    res.status(422).json({ error: err.message });
+    // Storing aan onze kant versus een foto die we niet kunnen lezen — dat
+    // vraagt om ander advies, dus het krijgt een andere statuscode.
+    if (err.ocrUnavailable) {
+      return res.status(503).json({ error: err.message, ocr_unavailable: true });
+    }
+    res.status(422).json({ error: 'We konden de gegevens niet uit deze foto halen' });
   }
 });
 

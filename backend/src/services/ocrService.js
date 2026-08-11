@@ -39,8 +39,20 @@ function getClient() {
 }
 
 async function extractSurfrData(imageBuffer) {
-  const [result] = await getClient().textDetection(imageBuffer);
-  const detections = result.textAnnotations;
+  let detections;
+  try {
+    const [result] = await getClient().textDetection(imageBuffer);
+    detections = result.textAnnotations;
+  } catch (err) {
+    // Alles wat hier misgaat ligt aan onze kant, niet aan de foto: ontbrekende
+    // credentials, facturering uit, quota op, of Google onbereikbaar. Dat moet
+    // de gebruiker anders te horen krijgen dan "probeer een andere foto", en de
+    // details horen in het serverlog thuis en niet in de browser.
+    console.error('Vision niet beschikbaar:', err.message);
+    const storing = new Error('De automatische scan is tijdelijk niet beschikbaar');
+    storing.ocrUnavailable = true;
+    throw storing;
+  }
 
   if (!detections || detections.length === 0) {
     throw new Error('No text detected in image');

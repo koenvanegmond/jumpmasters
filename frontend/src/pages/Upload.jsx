@@ -111,7 +111,10 @@ export default function Upload() {
     } catch (err) {
       // Uitlezen mislukt — pas nu ontgrendelen we de handmatige route, zodat
       // niemand vastloopt op een foto die de scan niet aankan.
-      setError('We konden de gegevens niet uit deze foto halen. Probeer eerst een andere foto — dat lost het meestal op.');
+      const storing = err.status === 503 || err.data?.ocr_unavailable;
+      setError(storing
+        ? 'De automatische scan ligt er even uit. Vul je sessie hieronder zelf in — de beheerder controleert hem daarna.'
+        : 'We konden de gegevens niet uit deze foto halen. Probeer eerst een andere foto — dat lost het meestal op.');
       setScanMislukt(true);
       setPreview(null);
       setStep('idle');
