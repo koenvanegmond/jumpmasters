@@ -3,6 +3,7 @@ const multer = require('multer');
 const pool = require('../db/connection');
 const { calculateTotalPoints } = require('../services/scoringService');
 const { authenticate } = require('../middleware/auth');
+const { avatarUrl, sessieMediaUrl, stuurBestand } = require('../utils/bestandsUrls');
 
 const router = express.Router();
 
@@ -21,10 +22,21 @@ router.get('/', authenticate, async (req, res) => {
   if (!q || q.length < 2) return res.json([]);
   try {
     const result = await pool.query(
-      `SELECT id, name, fleet, avatar_url FROM users WHERE name ILIKE $1 AND id != $2 LIMIT 10`,
+      `SELECT id, name, fleet, (avatar_url IS NOT NULL) AS has_avatar FROM users WHERE name ILIKE $1 AND id != $2 LIMIT 10`,
       [`%${q}%`, req.user.id]
     );
-    res.json(result.rows);
+    res.json(result.rows.map(({ has_avatar, ...u }) => ({ ...u, avatar_url: avatarUrl(req, u.id, has_avatar) })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfout' });
+  }
+});
+
+// GET /api/users/:id/avatar — publiek, want een <img> stuurt geen token mee
+router.get('/:id/avatar', async (req, res) => {
+  try {
+    const r = await pool.query('SELECT avatar_url FROM users WHERE id = $1', [req.params.id]);
+    return stuurBestand(res, r.rows[0]?.avatar_url);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });
@@ -36,7 +48,7 @@ router.get('/:id/stats', async (req, res) => {
   const { id } = req.params;
   try {
     const userResult = await pool.query(
-      'SELECT id, name, email, fleet, avatar_url FROM users WHERE id = $1',
+      'SELECT id, name, email, fleet, (avatar_url IS NOT NULL) AS has_avatar FROM users WHERE id = $1',
       [id]
     );
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'Gebruiker niet gevonden' });
@@ -44,7 +56,10 @@ router.get('/:id/stats', async (req, res) => {
     const user = userResult.rows[0];
 
     const sessionsResult = await pool.query(
-      `SELECT s.*, array_agg(u.name) FILTER (WHERE u.name IS NOT NULL) AS tagged_names
+      `SELECT s.id, s.date, s.height_m, s.airtime_s, s.distance_m, s.points,
+              s.verified, s.caption, s.media_type,
+              (s.media_url IS NOT NULL) AS has_media,
+              array_agg(u.name) FILTER (WHERE u.name IS NOT NULL) AS tagged_names
        FROM sessions s
        LEFT JOIN session_tags st ON st.session_id = s.id
        LEFT JOIN users u ON u.id = st.tagged_user_id
@@ -76,13 +91,16 @@ router.get('/:id/stats', async (req, res) => {
       if (uUser.rows[0].fleet === user.fleet && uPoints > total_points) rank_in_fleet++;
     }));
 
+    const { has_avatar, ...gebruiker } = user;
     res.json({
-      user,
+      user: { ...gebruiker, avatar_url: avatarUrl(req, user.id, has_avatar) },
       stats: { rank_overall, rank_in_fleet, total_points, sessions_count: verified.length, max_height, avg_height, max_airtime, max_distance },
+      // screenshot_url zat hier ook in maar wordt door geen enkel scherm
+      // gebruikt behalve het beheerpaneel — dat scheelde megabytes per profiel.
       recent_sessions: sessions.slice(0, 20).map(s => ({
         id: s.id, date: s.date, height: s.height_m, airtime: s.airtime_s,
         distance: s.distance_m, points: s.points, verified: s.verified,
-        screenshot_url: s.screenshot_url, media_url: s.media_url, media_type: s.media_type,
+        media_url: sessieMediaUrl(req, s.id, s.has_media), media_type: s.media_type,
         caption: s.caption, tagged_names: s.tagged_names || []
       }))
     });

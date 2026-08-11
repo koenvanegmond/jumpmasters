@@ -6,7 +6,10 @@ export default function Avatar({ user, size = 'md' }) {
     xl: 'w-20 h-20 text-3xl'
   };
   const cls = `rounded-full object-cover flex-shrink-0 ${sizes[size]}`;
-  if (user?.avatar_url) return <img src={user.avatar_url} alt={user.name} className={cls + ' object-cover'} />;
+  if (user?.avatar_url) {
+    return <img src={user.avatar_url} alt={user.name} className={cls + ' object-cover'}
+                loading="lazy" decoding="async" />;
+  }
   return (
     <div className={`${cls} bg-gradient-to-br from-jm-pink to-jm-pinkLight flex items-center justify-center font-bold text-white`}>
       {user?.name?.charAt(0)?.toUpperCase() ?? '?'}

@@ -89,8 +89,8 @@ function FeedPost({ session, user }) {
       {session.media_url && (
         <div className="cursor-pointer" onClick={() => setImgOpen(true)}>
           {session.media_type === 'video'
-            ? <video src={session.media_url} className="w-full max-h-72 object-cover" controls onClick={e => e.stopPropagation()} />
-            : <img src={session.media_url} alt="Sessie" className="w-full max-h-72 object-cover" />}
+            ? <video src={session.media_url} className="w-full max-h-72 object-cover" controls preload="none" onClick={e => e.stopPropagation()} />
+            : <img src={session.media_url} alt="Sessie" className="w-full max-h-72 object-cover" loading="lazy" decoding="async" />}
         </div>
       )}
 

@@ -11,8 +11,8 @@ export default function SessionCard({ session }) {
     <div className="card overflow-hidden hover:border-white/15 transition-colors">
       {session.media_url && (
         session.media_type === 'video'
-          ? <video src={session.media_url} className="w-full max-h-48 object-cover" controls />
-          : <img src={session.media_url} alt="Sessie" className="w-full max-h-48 object-cover" />
+          ? <video src={session.media_url} className="w-full max-h-48 object-cover" controls preload="none" />
+          : <img src={session.media_url} alt="Sessie" className="w-full max-h-48 object-cover" loading="lazy" decoding="async" />
       )}
       <div className="p-4">
         <div className="flex justify-between items-center mb-3">

@@ -1,9 +1,11 @@
 const express = require('express');
 const multer = require('multer');
+const jwt = require('jsonwebtoken');
 const pool = require('../db/connection');
 const { authenticate } = require('../middleware/auth');
 const { extractSurfrData } = require('../services/ocrService');
 const { calculateSessionPoints, determineFleet } = require('../services/scoringService');
+const { avatarUrl, sessieMediaUrl, stuurBestand } = require('../utils/bestandsUrls');
 
 const router = express.Router();
 
@@ -50,13 +52,31 @@ async function saveTags(sessionId, taggedUserIds, taggerName, taggerId) {
   }
 }
 
+// Scanbewijs: de uitgelezen waarden, ondertekend met JWT_SECRET. Bij het
+// opslaan gebruiken we de waarden uit dit bewijs en niet wat de browser
+// meestuurt — anders kan iedereen na een geslaagde scan alsnog zijn eigen
+// cijfers naar de server sturen. Het formulier uitschakelen is cosmetisch.
+function maakScanbewijs(userId, extracted) {
+  return jwt.sign(
+    {
+      sub: userId,
+      h: extracted.height,
+      a: extracted.airtime,
+      d: extracted.distance,
+      dt: extracted.date.toISOString().split('T')[0]
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '2h' }
+  );
+}
+
 // POST /api/sessions/upload  – OCR extraction from screenshot
 router.post('/upload', authenticate, screenshotUpload.single('screenshot'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Geen bestand geüpload' });
   try {
     const extracted = await extractSurfrData(req.file.buffer);
     const screenshot_url = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    res.json({ extracted, screenshot_url });
+    res.json({ extracted, screenshot_url, scan_token: maakScanbewijs(req.user.id, extracted) });
   } catch (err) {
     console.error(err);
     // Storing aan onze kant versus een foto die we niet kunnen lezen — dat
@@ -70,11 +90,26 @@ router.post('/upload', authenticate, screenshotUpload.single('screenshot'), asyn
 
 // POST /api/sessions/confirm  – save OCR-extracted session with optional media
 router.post('/confirm', authenticate, upload.single('media'), async (req, res) => {
-  const { screenshot_url, height, airtime, distance, date, caption, tagged_user_ids } = req.body;
+  const { screenshot_url, scan_token, caption, tagged_user_ids } = req.body;
 
-  if (!height || !airtime || !distance || !date) {
-    return res.status(400).json({ error: 'hoogte, vliegtijd, afstand en datum zijn verplicht' });
+  if (!scan_token) {
+    return res.status(400).json({ error: 'Scanbewijs ontbreekt — upload je screenshot opnieuw' });
   }
+
+  let scan;
+  try {
+    scan = jwt.verify(scan_token, process.env.JWT_SECRET);
+  } catch {
+    return res.status(400).json({ error: 'Scanbewijs is verlopen of ongeldig — upload je screenshot opnieuw' });
+  }
+
+  if (scan.sub !== req.user.id) {
+    return res.status(403).json({ error: 'Dit scanbewijs hoort bij een ander account' });
+  }
+
+  // Bewust uit het bewijs en niet uit de request body: wat de browser stuurt
+  // telt hier niet mee.
+  const height = scan.h, airtime = scan.a, distance = scan.d, date = scan.dt;
 
   const points = calculateSessionPoints(parseFloat(height), parseFloat(airtime), parseFloat(distance));
   let media_url = null, media_type = null;
@@ -140,9 +175,13 @@ router.post('/manual', authenticate, upload.single('media'), async (req, res) =>
 router.get('/feed', async (req, res) => {
   try {
     const result = await pool.query(
+      // Alleen of er media is, niet de data zelf: die base64-kolommen uit
+      // Postgres trekken kostte seconden, ook nu we ze niet meer doorsturen.
       `SELECT s.id, s.date, s.height_m, s.airtime_s, s.distance_m, s.points,
-              s.media_url, s.media_type, s.caption, s.created_at,
-              u.id as user_id, u.name as user_name, u.avatar_url, u.fleet,
+              (s.media_url IS NOT NULL) AS has_media,
+              s.media_type, s.caption, s.created_at,
+              u.id as user_id, u.name as user_name,
+              (u.avatar_url IS NOT NULL) AS has_avatar, u.fleet,
               array_agg(tu.name) FILTER (WHERE tu.name IS NOT NULL) AS tagged_names
        FROM sessions s
        JOIN users u ON u.id = s.user_id
@@ -153,7 +192,22 @@ router.get('/feed', async (req, res) => {
        ORDER BY s.created_at DESC
        LIMIT 50`
     );
-    res.json(result.rows);
+    res.json(result.rows.map(({ has_media, has_avatar, ...s }) => ({
+      ...s,
+      avatar_url: avatarUrl(req, s.user_id, has_avatar),
+      media_url: sessieMediaUrl(req, s.id, has_media)
+    })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfout' });
+  }
+});
+
+// GET /api/sessions/:id/media — publiek, want een <img> stuurt geen token mee
+router.get('/:id/media', async (req, res) => {
+  try {
+    const r = await pool.query('SELECT media_url FROM sessions WHERE id = $1', [req.params.id]);
+    return stuurBestand(res, r.rows[0]?.media_url);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });
@@ -164,7 +218,12 @@ router.get('/feed', async (req, res) => {
 router.get('/mine', authenticate, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT s.*, array_agg(u.name) FILTER (WHERE u.name IS NOT NULL) AS tagged_names
+      // s.* haalde ook screenshot_url en media_url op — twee base64-kolommen
+      // die geen enkel scherm hier gebruikt.
+      `SELECT s.id, s.date, s.height_m, s.airtime_s, s.distance_m, s.points,
+              s.verified, s.caption, s.media_type, s.created_at,
+              (s.media_url IS NOT NULL) AS has_media,
+              array_agg(u.name) FILTER (WHERE u.name IS NOT NULL) AS tagged_names
        FROM sessions s
        LEFT JOIN session_tags st ON st.session_id = s.id
        LEFT JOIN users u ON u.id = st.tagged_user_id
@@ -173,7 +232,10 @@ router.get('/mine', authenticate, async (req, res) => {
        ORDER BY s.date DESC`,
       [req.user.id]
     );
-    res.json(result.rows);
+    res.json(result.rows.map(({ has_media, ...s }) => ({
+      ...s,
+      media_url: sessieMediaUrl(req, s.id, has_media)
+    })));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });

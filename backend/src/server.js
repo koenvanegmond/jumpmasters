@@ -15,6 +15,10 @@ const socialRoutes = require('./routes/social');
 
 const app = express();
 
+// Render zet de app achter een proxy; zonder dit denkt Express dat elk
+// verzoek over http binnenkomt en bouwt hij verkeerde absolute URL's.
+app.set('trust proxy', 1);
+
 // CORS
 app.use(cors({
   origin: (origin, callback) => {

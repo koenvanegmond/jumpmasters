@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db/connection');
 const { authenticate } = require('../middleware/auth');
+const { avatarUrl } = require('../utils/bestandsUrls');
 
 const router = express.Router();
 
@@ -55,7 +56,9 @@ router.post('/login', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, email, name, fleet, is_admin, password_hash FROM users WHERE email = $1',
+      `SELECT id, email, name, fleet, is_admin, password_hash,
+              (avatar_url IS NOT NULL) AS has_avatar
+       FROM users WHERE email = $1`,
       [email.toLowerCase()]
     );
 
@@ -70,8 +73,8 @@ router.post('/login', async (req, res) => {
     }
 
     const token = generateToken(user.id);
-    const { password_hash, ...safeUser } = user;
-    res.json({ token, user: safeUser });
+    const { password_hash, has_avatar, ...safeUser } = user;
+    res.json({ token, user: { ...safeUser, avatar_url: avatarUrl(req, user.id, has_avatar) } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -80,7 +83,8 @@ router.post('/login', async (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', authenticate, (req, res) => {
-  res.json({ user: req.user });
+  const { has_avatar, ...gebruiker } = req.user;
+  res.json({ user: { ...gebruiker, avatar_url: avatarUrl(req, req.user.id, has_avatar) } });
 });
 
 // PATCH /api/auth/password

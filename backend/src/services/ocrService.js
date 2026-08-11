@@ -46,6 +46,20 @@ function kaleDatum(jaar, maandIndex, dag) {
   return new Date(Date.UTC(jaar, maandIndex, dag));
 }
 
+// Vision leest de 's' van seconden geregeld als een 5, waardoor "6.9s" als
+// "6.95" binnenkomt. Surfr toont vliegtijd altijd met één decimaal — alle
+// sessies in de database bevestigen dat — dus een tweede decimaal die precies
+// een 5 is en waar géén eenheid achter herkend werd, is die verdwaalde 's'.
+function normaliseerVliegtijd(ruw, teken) {
+  const waarde = String(ruw).replace(',', '.');
+  const eenheidHerkend = /^[sS@]$/.test(teken || '');
+
+  if (!eenheidHerkend && /^\d+\.\d{2}$/.test(waarde) && waarde.endsWith('5')) {
+    return parseFloat(waarde.slice(0, -1));
+  }
+  return parseFloat(waarde);
+}
+
 async function extractSurfrData(imageBuffer) {
   let detections;
   try {
@@ -80,9 +94,11 @@ async function extractSurfrData(imageBuffer) {
   // ── Airtime ───────────────────────────────────────────────────────────────
   // Dutch: "Max vliegtijd" / "Max. airtime"
   // Note: OCR sometimes reads "s" as "@" or other chars — so we just grab the number after the label
+  // Het teken ná het getal wordt meegevangen: daaraan zien we of de eenheid
+  // wel of niet als zodanig herkend is — zie normaliseerVliegtijd.
   const airtimeMatch =
-    fullText.match(/(?:Max\.?\s*vliegtijd|Max\.?\s*airtime)[^\d]*(\d+[.,]?\d*)/i) ||
-    fullText.match(/(\d+[.,]?\d*)\s*[s@][^\n]*\n[^\n]*(?:vliegtijd|airtime)/i);
+    fullText.match(/(?:Max\.?\s*vliegtijd|Max\.?\s*airtime)[^\d]*(\d+[.,]?\d*)\s*([^\d\s.,]?)/i) ||
+    fullText.match(/(\d+[.,]?\d*)\s*([s@])[^\n]*\n[^\n]*(?:vliegtijd|airtime)/i);
 
   // ── Distance ──────────────────────────────────────────────────────────────
   // Dutch: "Max afstand" / "Max. afstand"
@@ -123,7 +139,7 @@ async function extractSurfrData(imageBuffer) {
 
   // Parse values (replace comma decimal separator)
   const height   = heightMatch   ? parseFloat(heightMatch[1].replace(',', '.'))   : null;
-  const airtime  = airtimeMatch  ? parseFloat(airtimeMatch[1].replace(',', '.'))  : null;
+  const airtime  = airtimeMatch  ? normaliseerVliegtijd(airtimeMatch[1], airtimeMatch[2]) : null;
   const distance = distanceMatch ? parseFloat(distanceMatch[1].replace(',', '.')) : null;
 
   if (!height || !airtime || !distance) {

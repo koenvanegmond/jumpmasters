@@ -1,43 +1,48 @@
 const express = require('express');
 const pool = require('../db/connection');
 const { calculateTotalPoints } = require('../services/scoringService');
+const { avatarUrl } = require('../utils/bestandsUrls');
 
 const router = express.Router();
 
-async function buildLeaderboard(whereClause, params) {
-  // Get all users (optionally filtered by fleet)
+// Twee queries in totaal, ongeacht hoeveel deelnemers er zijn. Hiervoor werd
+// per gebruiker een aparte sessie-query gedaan; met dertig deelnemers waren
+// dat eenendertig queries per keer dat iemand de ranglijst opende.
+async function buildLeaderboard(req, whereClause, params) {
+  // Alleen of er een avatar is, niet de base64 zelf — zie bestandsUrls.js.
   const usersResult = await pool.query(
-    `SELECT id, name, fleet, avatar_url FROM users ${whereClause}`,
+    `SELECT id, name, fleet, (avatar_url IS NOT NULL) AS has_avatar FROM users ${whereClause}`,
     params
   );
+  if (usersResult.rows.length === 0) return [];
 
-  const leaderboard = await Promise.all(usersResult.rows.map(async (user) => {
-    const sessionsResult = await pool.query(
-      'SELECT points, height_m, airtime_s, distance_m, verified FROM sessions WHERE user_id = $1',
-      [user.id]
-    );
-    const sessions = sessionsResult.rows;
-    const verified = sessions.filter(s => s.verified);
+  const ids = usersResult.rows.map(u => u.id);
+  const sessionsResult = await pool.query(
+    `SELECT user_id, points, height_m, airtime_s, distance_m, verified
+     FROM sessions WHERE user_id = ANY($1::uuid[])`,
+    [ids]
+  );
 
-    const total_points = calculateTotalPoints(sessions);
-    const max_height    = verified.length ? Math.max(...verified.map(s => parseFloat(s.height_m)))   : 0;
-    const max_airtime   = verified.length ? Math.max(...verified.map(s => parseFloat(s.airtime_s)))  : 0;
-    const max_distance  = verified.length ? Math.max(...verified.map(s => parseFloat(s.distance_m))) : 0;
+  const perGebruiker = new Map(ids.map(id => [id, []]));
+  for (const s of sessionsResult.rows) perGebruiker.get(s.user_id)?.push(s);
 
-    return {
-      user_id: user.id,
-      name: user.name,
-      fleet: user.fleet,
-      avatar_url: user.avatar_url,
-      total_points,
-      sessions_count: verified.length,
-      max_height,
-      max_airtime,
-      max_distance
-    };
-  }));
+  return usersResult.rows
+    .map((user) => {
+      const sessions = perGebruiker.get(user.id) || [];
+      const verified = sessions.filter(s => s.verified);
 
-  return leaderboard
+      return {
+        user_id: user.id,
+        name: user.name,
+        fleet: user.fleet,
+        avatar_url: avatarUrl(req, user.id, user.has_avatar),
+        total_points: calculateTotalPoints(sessions),
+        sessions_count: verified.length,
+        max_height:   verified.length ? Math.max(...verified.map(s => parseFloat(s.height_m)))   : 0,
+        max_airtime:  verified.length ? Math.max(...verified.map(s => parseFloat(s.airtime_s)))  : 0,
+        max_distance: verified.length ? Math.max(...verified.map(s => parseFloat(s.distance_m))) : 0
+      };
+    })
     .sort((a, b) => b.total_points - a.total_points)
     .map((entry, index) => ({ rank: index + 1, ...entry }));
 }
@@ -45,7 +50,7 @@ async function buildLeaderboard(whereClause, params) {
 // GET /api/leaderboard/overall
 router.get('/overall', async (req, res) => {
   try {
-    const data = await buildLeaderboard('', []);
+    const data = await buildLeaderboard(req, '', []);
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -64,7 +69,8 @@ router.get('/daily', async (req, res) => {
     // 's avonds laat anders de verkeerde dag gepakt zou worden.
     const result = await pool.query(
       `SELECT s.points, s.height_m, s.airtime_s, s.distance_m, s.verified,
-              u.id AS user_id, u.name, u.fleet, u.avatar_url
+              u.id AS user_id, u.name, u.fleet,
+              (u.avatar_url IS NOT NULL) AS has_avatar
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.verified = true
@@ -76,7 +82,7 @@ router.get('/daily', async (req, res) => {
       if (!perRijder.has(row.user_id)) {
         perRijder.set(row.user_id, {
           user_id: row.user_id, name: row.name,
-          fleet: row.fleet, avatar_url: row.avatar_url, sessions: []
+          fleet: row.fleet, has_avatar: row.has_avatar, sessions: []
         });
       }
       perRijder.get(row.user_id).sessions.push(row);
@@ -87,7 +93,7 @@ router.get('/daily', async (req, res) => {
         user_id: r.user_id,
         name: r.name,
         fleet: r.fleet,
-        avatar_url: r.avatar_url,
+        avatar_url: avatarUrl(req, r.user_id, r.has_avatar),
         // Beste vijf van vandaag — zelfde functie als het seizoensklassement.
         total_points: calculateTotalPoints(r.sessions),
         // Aantal en records gaan wél over alle sessies van vandaag: je beste
@@ -117,7 +123,7 @@ router.get('/fleet/:fleetName', async (req, res) => {
   }
 
   try {
-    const data = await buildLeaderboard('WHERE fleet = $1', [fleetName]);
+    const data = await buildLeaderboard(req, 'WHERE fleet = $1', [fleetName]);
     res.json(data);
   } catch (err) {
     console.error(err);

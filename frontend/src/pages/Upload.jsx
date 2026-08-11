@@ -4,13 +4,15 @@ import { api } from '../services/api';
 import UploadZone from '../components/UploadZone';
 import { calculateSessionPoints } from '../utils/scoring';
 
-function Field({ label, value, onChange, unit }) {
+function Field({ label, value, onChange, unit, vast }) {
   return (
     <div>
       <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
       <div className="flex items-center gap-2">
-        <input type="number" step="0.1" min="0" required value={value} onChange={(e) => onChange(e.target.value)}
-          className="input flex-1" />
+        <input type="number" step="0.1" min="0" required value={value}
+          onChange={(e) => onChange(e.target.value)}
+          readOnly={vast} disabled={vast}
+          className={`input flex-1 ${vast ? 'opacity-70 cursor-not-allowed' : ''}`} />
         <span className="text-sm text-jm-muted w-6">{unit}</span>
       </div>
     </div>
@@ -70,6 +72,7 @@ export default function Upload() {
   const [step, setStep] = useState('idle');
   const [preview, setPreview] = useState(null);
   const [screenshotUrl, setScreenshotUrl] = useState('');
+  const [scanToken, setScanToken] = useState('');
   const [form, setForm] = useState({ date: '', height: '', airtime: '', distance: '' });
   const [caption, setCaption] = useState('');
   const [tagged, setTagged] = useState([]);
@@ -89,6 +92,7 @@ export default function Upload() {
     setError('');
     setPreview(null);
     setScreenshotUrl('');
+    setScanToken('');
     setForm({ date: today(), height: '', airtime: '', distance: '' });
     setStep('confirm');
   }
@@ -100,9 +104,10 @@ export default function Upload() {
     const fd = new FormData();
     fd.append('screenshot', file);
     try {
-      const { extracted, screenshot_url } = await api.uploadScreenshot(fd);
+      const { extracted, screenshot_url, scan_token } = await api.uploadScreenshot(fd);
       setScanMislukt(false);
       setScreenshotUrl(screenshot_url);
+      setScanToken(scan_token || '');
       setForm({
         date: extracted.date ? new Date(extracted.date).toISOString().split('T')[0] : today(),
         height: String(extracted.height), airtime: String(extracted.airtime), distance: String(extracted.distance)
@@ -126,16 +131,21 @@ export default function Upload() {
     setError('');
     setStep('submitting');
     const fd = new FormData();
-    if (screenshotUrl) fd.append('screenshot_url', screenshotUrl);
-    fd.append('height', form.height);
-    fd.append('airtime', form.airtime);
-    fd.append('distance', form.distance);
-    fd.append('date', form.date);
+    if (scanToken) {
+      // Gescande sessie: de server haalt de waarden uit het scanbewijs.
+      fd.append('screenshot_url', screenshotUrl);
+      fd.append('scan_token', scanToken);
+    } else {
+      fd.append('height', form.height);
+      fd.append('airtime', form.airtime);
+      fd.append('distance', form.distance);
+      fd.append('date', form.date);
+    }
     if (caption) fd.append('caption', caption);
     fd.append('tagged_user_ids', JSON.stringify(tagged.map(u => u.id)));
     if (mediaFile) fd.append('media', mediaFile);
     try {
-      const endpoint = screenshotUrl ? api.confirmSession : api.manualSession;
+      const endpoint = scanToken ? api.confirmSession : api.manualSession;
       await endpoint(fd);
       navigate('/profiel');
     } catch (err) {
@@ -193,20 +203,25 @@ export default function Upload() {
           {preview && (
             <img src={preview} alt="Screenshot" className="w-full rounded-xl max-h-40 object-contain border border-white/[0.07]" />
           )}
-          {screenshotUrl && (
+          {scanToken && (
             <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
-              ✓ Screenshot uitgelezen — controleer de gegevens en pas aan als er een foutje zit
+              ✓ Screenshot uitgelezen — deze cijfers staan vast, zo blijft de ranglijst eerlijk.
+              <span className="block text-emerald-400/70 mt-1">
+                Klopt er iets niet? Laat het de beheerder weten, die kan het aanpassen.
+              </span>
             </div>
           )}
 
           <div>
             <label className="block text-sm font-medium text-white mb-1.5">Datum</label>
-            <input type="date" required value={form.date} onChange={(e) => setForm(p => ({ ...p, date: e.target.value }))}
-              className="input" />
+            <input type="date" required value={form.date}
+              onChange={(e) => setForm(p => ({ ...p, date: e.target.value }))}
+              readOnly={!!scanToken} disabled={!!scanToken}
+              className={`input ${scanToken ? 'opacity-70 cursor-not-allowed' : ''}`} />
           </div>
-          <Field label="Hoogste sprong" value={form.height} onChange={setField('height')} unit="m" />
-          <Field label="Max airtime" value={form.airtime} onChange={setField('airtime')} unit="s" />
-          <Field label="Max afstand" value={form.distance} onChange={setField('distance')} unit="m" />
+          <Field label="Hoogste sprong" value={form.height} onChange={setField('height')} unit="m" vast={!!scanToken} />
+          <Field label="Max airtime" value={form.airtime} onChange={setField('airtime')} unit="s" vast={!!scanToken} />
+          <Field label="Max afstand" value={form.distance} onChange={setField('distance')} unit="m" vast={!!scanToken} />
 
           {points !== null && (
             <div className="bg-jm-pink/5 border border-jm-pink/20 rounded-xl p-5 text-center">
