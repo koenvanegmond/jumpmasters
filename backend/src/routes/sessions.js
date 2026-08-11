@@ -171,9 +171,23 @@ router.post('/manual', authenticate, upload.single('media'), async (req, res) =>
   }
 });
 
+// Wie is dit, als er een token meekomt? De feed is publiek, maar met een
+// ingelogde bezoeker kunnen we in dezelfde query meegeven wat hij al geliket
+// heeft — anders moet de browser dat per post apart navragen.
+function optioneleGebruiker(req) {
+  const header = req.headers.authorization || '';
+  if (!header.startsWith('Bearer ')) return null;
+  try {
+    return jwt.verify(header.slice(7), process.env.JWT_SECRET).userId;
+  } catch {
+    return null;
+  }
+}
+
 // GET /api/sessions/feed — all verified sessions, newest first (public)
 router.get('/feed', async (req, res) => {
   try {
+    const mij = optioneleGebruiker(req);
     const result = await pool.query(
       // Alleen of er media is, niet de data zelf: die base64-kolommen uit
       // Postgres trekken kostte seconden, ook nu we ze niet meer doorsturen.
@@ -182,7 +196,15 @@ router.get('/feed', async (req, res) => {
               s.media_type, s.caption, s.created_at,
               u.id as user_id, u.name as user_name,
               (u.avatar_url IS NOT NULL) AS has_avatar, u.fleet,
-              array_agg(tu.name) FILTER (WHERE tu.name IS NOT NULL) AS tagged_names
+              array_agg(tu.name) FILTER (WHERE tu.name IS NOT NULL) AS tagged_names,
+              -- Likes en reacties meteen meesturen. De feed vroeg dit eerst
+              -- per post apart op: twaalf posts waren twaalf extra rondjes.
+              (SELECT COUNT(*) FROM likes l WHERE l.session_id = s.id)::int    AS likes_count,
+              (SELECT COUNT(*) FROM comments c WHERE c.session_id = s.id)::int AS comments_count,
+              EXISTS (
+                SELECT 1 FROM likes l2
+                WHERE l2.session_id = s.id AND l2.user_id = $1::uuid
+              ) AS liked_by_me
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        LEFT JOIN session_tags st ON st.session_id = s.id
@@ -190,7 +212,8 @@ router.get('/feed', async (req, res) => {
        WHERE s.verified = true
        GROUP BY s.id, u.id, u.name, u.avatar_url, u.fleet
        ORDER BY s.created_at DESC
-       LIMIT 50`
+       LIMIT 50`,
+      [mij]
     );
     res.json(result.rows.map(({ has_media, has_avatar, ...s }) => ({
       ...s,

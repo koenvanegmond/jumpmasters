@@ -16,19 +16,20 @@ function timeAgo(dateStr) {
 
 function FeedPost({ session, user }) {
   const [imgOpen, setImgOpen] = useState(false);
-  const [likes, setLikes] = useState(0);
-  const [likedByMe, setLikedByMe] = useState(false);
+  // Likes komen mee in de feed zelf; hier stond een aparte fetch per post,
+  // waardoor twaalf posts twaalf extra verzoeken opleverden voordat je iets zag.
+  const [likes, setLikes] = useState(session.likes_count ?? 0);
+  const [likedByMe, setLikedByMe] = useState(!!session.liked_by_me);
   const [comments, setComments] = useState([]);
+  const [aantalReacties, setAantalReacties] = useState(session.comments_count ?? 0);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [posting, setPosting] = useState(false);
 
-  useEffect(() => {
-    api.getLikes(session.id).then(d => { setLikes(d.count); setLikedByMe(d.liked_by_me); }).catch(() => {});
-  }, [session.id]);
-
   function loadComments() {
-    api.getComments(session.id).then(setComments).catch(() => {});
+    api.getComments(session.id)
+      .then(rijen => { setComments(rijen); setAantalReacties(rijen.length); })
+      .catch(() => {});
   }
 
   function toggleComments() {
@@ -52,6 +53,7 @@ function FeedPost({ session, user }) {
     try {
       const c = await api.postComment(session.id, newComment);
       setComments(prev => [...prev, c]);
+      setAantalReacties(n => n + 1);
       setNewComment('');
     } catch (err) { alert(err.message); }
     finally { setPosting(false); }
@@ -61,6 +63,7 @@ function FeedPost({ session, user }) {
     try {
       await api.deleteComment(commentId);
       setComments(prev => prev.filter(c => c.id !== commentId));
+      setAantalReacties(n => Math.max(0, n - 1));
     } catch (err) { alert(err.message); }
   }
 
@@ -130,7 +133,7 @@ function FeedPost({ session, user }) {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
           </svg>
-          {comments.length > 0 ? comments.length : (showComments ? 'Verberg' : 'Reacties')}
+          {aantalReacties > 0 ? aantalReacties : (showComments ? 'Verberg' : 'Reacties')}
         </button>
       </div>
 
