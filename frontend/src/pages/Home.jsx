@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import FleetBadge from '../components/FleetBadge';
 import Avatar from '../components/Avatar';
+import Podium from '../components/Podium';
 import { IconRiders, IconSessions, IconHeight, IconUpload, IconAirtime, IconDistance } from '../components/Icons';
 
 function StatCard({ icon, label, value, sub }) {
@@ -55,9 +56,13 @@ export default function Home({ user }) {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      {/* Hero */}
-      <div className="relative card overflow-hidden p-8 md:p-12 mb-8 text-center">
+    // Op mobiel staat de ranglijst vóór de statistieken: dat is waarvoor
+    // mensen de site openen. Op desktop blijft de vertrouwde volgorde.
+    <div className="max-w-5xl mx-auto px-4 py-6 md:py-10 flex flex-col">
+      {/* Hero — alleen op desktop. Op mobiel dupliceert dit de tabbalk
+          (uploaden en ranglijst staan daar al) en duwt het de ranglijst
+          onder de vouw. */}
+      <div className="order-1 hidden md:block relative card overflow-hidden p-8 md:p-12 mb-8 text-center">
         <div className="absolute inset-0 pointer-events-none"
              style={{ background: 'linear-gradient(135deg, rgba(232,25,106,0.12) 0%, transparent 60%)' }} />
         <KiteDecoration />
@@ -83,15 +88,30 @@ export default function Home({ user }) {
         </div>
       </div>
 
+      {/* Op mobiel is de hero weg, dus krijgen bezoekers zonder account hier
+          nog één keer de kans om mee te doen. */}
+      {!user && (
+        <Link to="/registreren"
+          className="order-1 md:hidden card p-4 mb-4 flex items-center gap-3 hover:border-white/15 transition-colors">
+          <img src="/logo-full.png" alt="" className="h-10 w-auto flex-shrink-0"
+            onError={(e) => { e.target.style.display = 'none'; }} />
+          <span className="flex-1 min-w-0">
+            <span className="block font-bold text-white text-sm">Doe mee met de competitie</span>
+            <span className="block text-xs text-jm-muted mt-0.5">Upload je Surfr-score en pak een plek op het podium</span>
+          </span>
+          <span className="text-jm-pink font-black text-lg flex-shrink-0">→</span>
+        </Link>
+      )}
+
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="order-3 md:order-2 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
         <StatCard icon={<IconRiders className="w-5 h-5" />} label="Deelnemers" value={stats?.riders} />
         <StatCard icon={<IconSessions className="w-5 h-5" />} label="Totaal Sessies" value={stats?.sessions} />
         <StatCard icon={<IconHeight className="w-5 h-5" />} label="Hoogste Jump" value={stats?.topHeight ? `${parseFloat(stats.topHeight).toFixed(1)} m` : null} />
       </div>
 
       {/* Top riders */}
-      <div className="card p-6">
+      <div className="order-2 md:order-3 card p-5 md:p-6 mb-4 md:mb-0">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-black text-white">Top rijders 2026</h2>
           <img src="/logo-text.png" alt="" className="h-5 opacity-30"
@@ -100,8 +120,10 @@ export default function Home({ user }) {
         {top.length === 0 ? (
           <p className="text-jm-muted text-sm text-center py-8">Nog geen sessies. Wees de eerste!</p>
         ) : (
-          <div className="space-y-2">
-            {top.map((entry) => (
+          <>
+          <Podium entries={top} />
+          <div className={`space-y-2 ${top.length > 3 ? 'mt-5 pt-4 border-t border-white/[0.07]' : ''}`}>
+            {top.slice(3).map((entry) => (
               <Link to={`/rijder/${entry.user_id}`} key={entry.user_id}
                 className="flex items-center gap-3 rounded-xl px-3 py-3 -mx-3 transition-colors group"
                 style={{ ':hover': { background: 'rgba(255,255,255,0.04)' } }}
@@ -140,6 +162,7 @@ export default function Home({ user }) {
               </Link>
             ))}
           </div>
+          </>
         )}
         <div className="mt-4 pt-4 border-t border-white/[0.07] flex items-center justify-between">
           <Link to="/ranglijst" className="text-sm text-jm-pink font-semibold hover:underline">
