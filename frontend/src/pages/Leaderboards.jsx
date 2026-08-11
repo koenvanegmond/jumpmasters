@@ -2,18 +2,28 @@ import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import LeaderboardTable from '../components/LeaderboardTable';
 
-const KLASSEN = ['Algeheel', 'Bronze', 'Silver', 'Gold', 'Platinum'];
+const KLASSEN = ['Vandaag', 'Algeheel', 'Bronze', 'Silver', 'Gold', 'Platinum'];
+
+const ONDERTITELS = {
+  Vandaag: 'Alle sessies van vandaag tellen mee',
+  Algeheel: 'Top 5 sessies tellen mee voor het eindklassement',
+};
+
+function haalOp(klasse) {
+  if (klasse === 'Vandaag') return api.leaderboardDaily();
+  if (klasse === 'Algeheel') return api.leaderboardOverall();
+  return api.leaderboardFleet(klasse);
+}
 
 export default function Leaderboards() {
-  const [actief, setActief] = useState('Algeheel');
+  const [actief, setActief] = useState('Vandaag');
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (data[actief]) return;
     setLoading(true);
-    const fetch = actief === 'Algeheel' ? api.leaderboardOverall() : api.leaderboardFleet(actief);
-    fetch
+    haalOp(actief)
       .then((entries) => setData((prev) => ({ ...prev, [actief]: entries })))
       .catch(() => setData((prev) => ({ ...prev, [actief]: [] })))
       .finally(() => setLoading(false));
@@ -25,7 +35,9 @@ export default function Leaderboards() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-black text-white">Ranglijst 2026</h1>
-            <p className="text-jm-muted mt-1">Top 5 sessies tellen mee voor het eindklassement</p>
+            <p className="text-jm-muted mt-1">
+              {ONDERTITELS[actief] || `Klassement binnen ${actief}`}
+            </p>
           </div>
           <img src="/logo-text.png" alt="" className="h-7 hidden sm:block opacity-40"
             onError={(e) => e.target.style.display='none'} />
@@ -49,7 +61,7 @@ export default function Leaderboards() {
       <div className="card p-4 md:p-6">
         {loading
           ? <div className="text-center py-16 text-jm-muted">Laden...</div>
-          : <LeaderboardTable entries={data[actief] || []} showFleet={actief === 'Algeheel'} />}
+          : <LeaderboardTable entries={data[actief] || []} showFleet={actief === 'Algeheel' || actief === 'Vandaag'} />}
       </div>
     </div>
   );

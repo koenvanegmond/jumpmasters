@@ -96,7 +96,9 @@ router.post('/confirm', authenticate, upload.single('media'), async (req, res) =
   }
 });
 
-// POST /api/sessions/manual  – manual entry with optional media
+// POST /api/sessions/manual  – handmatige invoer, zonder screenshot als bewijs.
+// Deze sessies komen binnen als niet-geverifieerd en verschijnen in /beheer,
+// zodat niemand zomaar een score kan verzinnen.
 router.post('/manual', authenticate, upload.single('media'), async (req, res) => {
   const { date, height, airtime, distance, caption, tagged_user_ids } = req.body;
 
@@ -115,7 +117,7 @@ router.post('/manual', authenticate, upload.single('media'), async (req, res) =>
   try {
     const result = await pool.query(
       `INSERT INTO sessions (user_id, date, height_m, airtime_s, distance_m, points, media_url, media_type, caption, verified)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true) RETURNING *`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, false) RETURNING *`,
       [req.user.id, date, height, airtime, distance, points, media_url, media_type, caption || null]
     );
     const session = result.rows[0];

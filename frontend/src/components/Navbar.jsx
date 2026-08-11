@@ -147,15 +147,12 @@ export default function Navbar({ user, onLogout }) {
       </div>
 
       {/* Mobile menu */}
+      {/* Home, Feed, Ranglijst, Wind en Uploaden staan onderin in de tabbalk —
+          hier alleen wat daar niet past. */}
       {open && (
         <div className="md:hidden border-t border-white/[0.07] bg-jm-card px-4 py-4 space-y-3">
-          <NavLink to="/" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Home</NavLink>
-          <NavLink to="/feed" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Feed</NavLink>
-          <NavLink to="/wind" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Wind</NavLink>
-          <NavLink to="/ranglijst" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Ranglijst</NavLink>
           <NavLink to="/nieuws" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Nieuws</NavLink>
           <NavLink to="/hoe-het-werkt" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Hoe het werkt</NavLink>
-          {user && <NavLink to="/uploaden" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Uploaden</NavLink>}
           {user?.is_admin && <NavLink to="/beheer" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Beheer</NavLink>}
           {user ? (
             <>

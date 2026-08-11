@@ -24,8 +24,13 @@ export default function UploadZone({ onFile }) {
       }}
     >
       <div className="text-5xl mb-4">📸</div>
-      <p className="text-base font-bold text-white">Sleep je Surfr-screenshot hierheen</p>
-      <p className="text-sm mt-1" style={{ color: 'var(--jm-muted)' }}>of klik om te bladeren — JPEG / PNG, max 5MB</p>
+      <p className="text-base font-bold text-white">Kies je Surfr-foto</p>
+      <p className="text-sm mt-1" style={{ color: 'var(--jm-muted)' }}>
+        We lezen hoogte, vliegtijd en afstand er zelf uit
+      </p>
+      <p className="text-xs mt-2" style={{ color: 'var(--jm-muted)' }}>
+        Tik om te kiezen, of sleep hem hierheen — JPEG of PNG, max 5MB
+      </p>
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/jpg" className="hidden"
         onChange={(e) => e.target.files[0] && onFile(e.target.files[0])} />
     </div>

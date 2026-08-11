@@ -35,6 +35,7 @@ export const api = {
 
   // Leaderboard
   leaderboardOverall: () => request('/leaderboard/overall'),
+  leaderboardDaily: () => request('/leaderboard/daily'),
   leaderboardFleet: (fleet) => request(`/leaderboard/fleet/${fleet}`),
 
   // Users

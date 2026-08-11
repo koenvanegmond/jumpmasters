@@ -61,6 +61,10 @@ function TagInput({ tagged, onAdd, onRemove }) {
   );
 }
 
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
 export default function Upload() {
   const navigate = useNavigate();
   const [step, setStep] = useState('idle');
@@ -71,10 +75,23 @@ export default function Upload() {
   const [tagged, setTagged] = useState([]);
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
+  const [showExtras, setShowExtras] = useState(false);
+  const [scanMislukt, setScanMislukt] = useState(false);
   const [error, setError] = useState('');
   const mediaRef = useRef();
 
   function setField(key) { return (val) => setForm(p => ({ ...p, [key]: val })); }
+
+  // Zelf invullen is bewust geen vrije keuze — anders kan iedereen een score
+  // verzinnen. Deze route komt pas beschikbaar nadat de scan echt gefaald heeft,
+  // en zo'n sessie gaat daarna langs de beheerder ter controle.
+  function startManual() {
+    setError('');
+    setPreview(null);
+    setScreenshotUrl('');
+    setForm({ date: today(), height: '', airtime: '', distance: '' });
+    setStep('confirm');
+  }
 
   async function handleScreenshot(file) {
     setError('');
@@ -84,15 +101,18 @@ export default function Upload() {
     fd.append('screenshot', file);
     try {
       const { extracted, screenshot_url } = await api.uploadScreenshot(fd);
+      setScanMislukt(false);
       setScreenshotUrl(screenshot_url);
       setForm({
-        date: extracted.date ? new Date(extracted.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        date: extracted.date ? new Date(extracted.date).toISOString().split('T')[0] : today(),
         height: String(extracted.height), airtime: String(extracted.airtime), distance: String(extracted.distance)
       });
       setStep('confirm');
     } catch (err) {
-      // OCR failed — go back to idle so user must upload a valid screenshot
-      setError('Kon de gegevens niet uitlezen uit deze foto. Zorg dat je een duidelijke Surfr-screenshot uploadt.');
+      // Uitlezen mislukt — pas nu ontgrendelen we de handmatige route, zodat
+      // niemand vastloopt op een foto die de scan niet aankan.
+      setError('We konden de gegevens niet uit deze foto halen. Probeer eerst een andere foto — dat lost het meestal op.');
+      setScanMislukt(true);
       setPreview(null);
       setStep('idle');
     }
@@ -128,12 +148,33 @@ export default function Upload() {
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-black text-white mb-1">Sessie uploaden</h1>
-      <p className="text-jm-muted text-sm mb-6">Upload je Surfr-screenshot als bewijs — we lezen de gegevens automatisch uit.</p>
+      <p className="text-jm-muted text-sm mb-6">
+        {step === 'idle'
+          ? 'Kies je Surfr-foto, dan lezen we de gegevens automatisch uit. Lukt dat niet, vul je het zelf in.'
+          : 'Controleer de gegevens en pas aan als er een foutje in zit.'}
+      </p>
 
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>}
 
       {step === 'idle' && (
-        <UploadZone onFile={handleScreenshot} />
+        <>
+          <UploadZone onFile={handleScreenshot} />
+
+          {/* Noodluik: pas zichtbaar nadat de scan gefaald heeft. */}
+          {scanMislukt && (
+            <div className="mt-5 rounded-xl p-4 border"
+                 style={{ background: 'rgba(251,191,36,0.07)', borderColor: 'rgba(251,191,36,0.25)' }}>
+              <p className="text-sm font-bold text-yellow-300 mb-1">Lukt het echt niet?</p>
+              <p className="text-sm text-yellow-200/80 leading-relaxed mb-3">
+                Dan mag je je sessie zelf invullen. Die gaat wel eerst langs de beheerder
+                voordat hij meetelt in de ranglijst.
+              </p>
+              <button type="button" onClick={startManual} className="btn-secondary text-sm py-2 px-4">
+                Zelf invullen
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {step === 'processing' && (
@@ -149,9 +190,11 @@ export default function Upload() {
           {preview && (
             <img src={preview} alt="Screenshot" className="w-full rounded-xl max-h-40 object-contain border border-white/[0.07]" />
           )}
-          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
-            ✓ Screenshot uitgelezen — controleer de gegevens en pas aan als er een foutje zit
-          </div>
+          {screenshotUrl && (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
+              ✓ Screenshot uitgelezen — controleer de gegevens en pas aan als er een foutje zit
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-white mb-1.5">Datum</label>
@@ -169,6 +212,15 @@ export default function Upload() {
             </div>
           )}
 
+          {/* Optioneel blok — ingeklapt, zodat alleen datum en de drie cijfers vooropstaan */}
+          <button type="button" onClick={() => setShowExtras(v => !v)}
+            className="w-full flex items-center justify-between text-sm text-jm-muted hover:text-white transition-colors border-t border-white/[0.07] pt-4">
+            <span>Bijschrift, foto en rijders taggen</span>
+            <span className="text-lg leading-none">{showExtras ? '−' : '+'}</span>
+          </button>
+
+          {showExtras && (
+          <>
           <div>
             <label className="block text-sm font-medium text-white mb-1.5">Bijschrift (optioneel)</label>
             <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={2}
@@ -200,13 +252,15 @@ export default function Upload() {
             <input ref={mediaRef} type="file" accept="image/*,video/*" className="hidden"
               onChange={(e) => { if (e.target.files[0]) { setMediaFile(e.target.files[0]); setMediaPreview(URL.createObjectURL(e.target.files[0])); } }} />
           </div>
+          </>
+          )}
 
           <button type="submit" disabled={step === 'submitting'} className="btn-primary w-full justify-center disabled:opacity-60">
             {step === 'submitting' ? 'Opslaan...' : 'Sessie opslaan'}
           </button>
           <button type="button" onClick={() => { setStep('idle'); setScreenshotUrl(''); setPreview(null); setError(''); }}
             className="w-full text-sm text-jm-muted hover:text-white transition-colors text-center">
-            ← Andere screenshot uploaden
+            ← Opnieuw beginnen
           </button>
         </form>
       )}

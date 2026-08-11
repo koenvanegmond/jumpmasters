@@ -22,7 +22,24 @@
       "Bash(dir \"C:\\\\Users\\\\Koen van Egmond\\\\Documents\\\\JUMPMASTERS\\\\frontend\\\\public\")",
       "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\Koen van Egmond\\\\Documents\\\\JUMPMASTERS\\\\frontend\\\\public'' -ErrorAction SilentlyContinue | Select-Object Name\")",
       "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
-      "Bash(curl -s http://localhost:3002/api/going/today)"
+      "Bash(curl -s http://localhost:3002/api/going/today)",
+      "Bash(curl -s https://jumpmasters.onrender.com/api/health)",
+      "Bash(python3 -c \"from PIL import Image; print\\(''ok''\\)\")",
+      "Bash(python -c \"from PIL import Image; print\\(''ok''\\)\")",
+      "Bash(pip install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(node -e \"const j = require\\(''jimp''\\); console.log\\(Object.keys\\(j\\).slice\\(0,10\\)\\);\")",
+      "Read(//c/Users/Koen van Egmond/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/463eac21-0d99-41c0-a51c-0cabe540fc5b/4100f8cc-7f59-46d4-b1ed-3d5c084a70f2/skills/docx/**)",
+      "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\Koen van Egmond\\\\Downloads\\\\BTR-2 Summary.docx\" -o output.md)",
+      "Bash(python scripts/office/unpack.py \"C:\\\\Users\\\\Koen van Egmond\\\\Downloads\\\\BTR-2 Summary.docx\" unpacked_btr2/)",
+      "Bash(python3 -c \":*)",
+      "Bash(nslookup db.nvirjwxyywtiewuxkqcf.supabase.co)",
+      "Bash(curl -s -m 30 -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://nvirjwxyywtiewuxkqcf.supabase.co/rest/v1/)",
+      "Bash(nslookup nvirjwxyywtiewuxkqcf.supabase.co 8.8.8.8)",
+      "Bash(nslookup db.nvirjwxyywtiewuxkqcf.supabase.co 8.8.8.8)",
+      "Bash(nslookup supabase.co 8.8.8.8)",
+      "Bash(rm -rf node_modules/vite node_modules/.vite*)",
+      "Bash(npm install *)"
     ]
   }
 }

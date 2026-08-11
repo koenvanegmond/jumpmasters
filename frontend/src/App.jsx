@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import MobileTabBar from './components/MobileTabBar';
 import Home from './pages/Home';
 import Feed from './pages/Feed';
 import Nieuws from './pages/Nieuws';
@@ -41,7 +42,8 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen flex flex-col">
         <Navbar user={user} onLogout={() => setUser(null)} />
-        <main className="flex-1">
+        {/* pb-24 op mobiel zodat de vaste tabbalk niets afdekt */}
+        <main className="flex-1 pb-24 md:pb-0">
           <Routes>
             <Route path="/" element={<Home user={user} />} />
             <Route path="/feed" element={<Feed user={user} />} />
@@ -65,6 +67,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
+        <MobileTabBar />
       </div>
     </BrowserRouter>
   );

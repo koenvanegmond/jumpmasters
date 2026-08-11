@@ -18,7 +18,8 @@ export default function Signup({ onLogin }) {
     try {
       const user = await signup(email, password, name);
       onLogin(user);
-      navigate('/');
+      // Direct door naar uploaden — dat is waarvoor je een account aanmaakt.
+      navigate('/uploaden');
     } catch (err) {
       setError(err.message);
     } finally {
