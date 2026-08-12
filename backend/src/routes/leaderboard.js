@@ -113,11 +113,11 @@ router.get('/daily', async (req, res) => {
   }
 });
 
-// Feestweek: begin- en einddatum komen uit de omgeving, zodat de periode
-// verzet kan worden zonder de code aan te raken. Staan ze er niet, dan meldt
-// het endpoint dat netjes en verbergt de frontend het tabblad.
-const FEESTWEEK_START = process.env.FEESTWEEK_START || null;
-const FEESTWEEK_EIND  = process.env.FEESTWEEK_EIND  || null;
+// Feestweek 2026: 14 t/m 23 augustus, beide dagen meegerekend. Staat hier als
+// standaard zodat het meteen werkt na deployen; via de omgeving te verzetten
+// als de datums veranderen, zonder de code aan te raken.
+const FEESTWEEK_START = process.env.FEESTWEEK_START || '2026-08-14';
+const FEESTWEEK_EIND  = process.env.FEESTWEEK_EIND  || '2026-08-23';
 const FEESTWEEK_BESTE = parseInt(process.env.FEESTWEEK_BESTE || '2', 10);
 
 // GET /api/leaderboard/feestweek — alleen sessies binnen de feestweek, en
@@ -168,7 +168,16 @@ router.get('/feestweek', async (req, res) => {
       .sort((a, b) => b.total_points - a.total_points)
       .map((entry, index) => ({ rank: index + 1, ...entry }));
 
-    res.json({ periode: { van: FEESTWEEK_START, tot: FEESTWEEK_EIND, beste: FEESTWEEK_BESTE }, data });
+    // Loopt de feestweek nu? Dan opent de ranglijst vanzelf op dit tabblad.
+    // Nederlandse datum, anders klopt de grens 's nachts niet.
+    const vandaag = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam' })
+      .format(new Date());
+    const actief = vandaag >= FEESTWEEK_START && vandaag <= FEESTWEEK_EIND;
+
+    res.json({
+      periode: { van: FEESTWEEK_START, tot: FEESTWEEK_EIND, beste: FEESTWEEK_BESTE, actief },
+      data
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

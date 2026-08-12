@@ -13,16 +13,25 @@ export default function Leaderboards() {
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(false);
   const [feestweek, setFeestweek] = useState(null); // null = nog onbekend, false = niet ingesteld
+  const [zelfGekozen, setZelfGekozen] = useState(false);
 
   // Het feestweek-tabblad verschijnt alleen als de periode is ingesteld.
+  // Loopt de week op dit moment, dan opent de ranglijst er meteen op — tenzij
+  // je zelf al een ander tabblad had aangetikt.
   useEffect(() => {
     api.leaderboardFeestweek()
       .then(({ periode, data: entries }) => {
         setFeestweek(periode);
         setData((prev) => ({ ...prev, Feestweek: entries }));
+        if (periode.actief) setActief((huidig) => (zelfGekozen ? huidig : 'Feestweek'));
       })
       .catch(() => setFeestweek(false));
   }, []);
+
+  function kiesTabblad(naam) {
+    setZelfGekozen(true);
+    setActief(naam);
+  }
 
   const klassen = feestweek ? ['Feestweek', ...VASTE_KLASSEN] : VASTE_KLASSEN;
 
@@ -65,7 +74,7 @@ export default function Leaderboards() {
       {/* Fleet tabs */}
       <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
         {klassen.map((k) => (
-          <button key={k} onClick={() => setActief(k)}
+          <button key={k} onClick={() => kiesTabblad(k)}
             className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
               actief === k
                 ? 'bg-jm-pink text-white shadow-lg shadow-jm-pink/20'
