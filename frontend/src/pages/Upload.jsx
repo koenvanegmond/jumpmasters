@@ -68,6 +68,32 @@ function today() {
   return new Date().toISOString().split('T')[0];
 }
 
+// Het bewijsplaatje gaat als tekstveld terug naar de server en wordt alleen
+// door de beheerder bekeken. Op volle grootte is een telefoonscreenshot als
+// base64 zo een paar megabyte, wat traag uploadt en eerder de veldlimiet raakte.
+// Een versie van 900 pixels breed is ruim genoeg om te controleren.
+function verkleinVoorBewijs(bestand, maxBreedte = 900) {
+  return new Promise((klaar) => {
+    const url = URL.createObjectURL(bestand);
+    const img = new Image();
+    img.onload = () => {
+      const schaal = Math.min(1, maxBreedte / img.width);
+      const doek = document.createElement('canvas');
+      doek.width = Math.round(img.width * schaal);
+      doek.height = Math.round(img.height * schaal);
+      doek.getContext('2d').drawImage(img, 0, 0, doek.width, doek.height);
+      URL.revokeObjectURL(url);
+      try {
+        klaar(doek.toDataURL('image/jpeg', 0.82));
+      } catch {
+        klaar(null);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); klaar(null); };
+    img.src = url;
+  });
+}
+
 export default function Upload({ user }) {
   const navigate = useNavigate();
   const [step, setStep] = useState('idle');
@@ -108,7 +134,10 @@ export default function Upload({ user }) {
     try {
       const { extracted, screenshot_url, scan_token } = await api.uploadScreenshot(fd);
       setScanMislukt(false);
-      setScreenshotUrl(screenshot_url);
+      // Liever onze eigen verkleinde versie dan de volledige die de server
+      // terugstuurt; die moet zo dadelijk weer omhoog.
+      const compact = await verkleinVoorBewijs(file);
+      setScreenshotUrl(compact || screenshot_url);
       setScanToken(scan_token || '');
       setForm({
         date: extracted.date ? new Date(extracted.date).toISOString().split('T')[0] : today(),

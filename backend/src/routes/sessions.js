@@ -11,7 +11,13 @@ const router = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB for video
+  limits: {
+    fileSize: 20 * 1024 * 1024,  // 20MB for video
+    // Het bewijsplaatje komt als tekstveld binnen, niet als bestand. Multer
+    // staat velden standaard maar 1 MB toe en een telefoonscreenshot is als
+    // base64 al snel groter, waardoor opslaan afbrak met een serverfout.
+    fieldSize: 25 * 1024 * 1024
+  },
   fileFilter(req, file, cb) {
     const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'video/mp4', 'video/quicktime', 'video/webm'];
     if (allowed.includes(file.mimetype)) cb(null, true);

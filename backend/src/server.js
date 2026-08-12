@@ -65,7 +65,12 @@ app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 // Error handler
 app.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ error: 'File too large (max 5MB)' });
+    return res.status(413).json({ error: 'Bestand te groot' });
+  }
+  // Zonder deze regel kwam een te groot formulierveld eruit als een kale
+  // "Internal server error", waar niemand iets mee kan.
+  if (err.code === 'LIMIT_FIELD_VALUE') {
+    return res.status(413).json({ error: 'Je screenshot is te groot om op te slaan' });
   }
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });
