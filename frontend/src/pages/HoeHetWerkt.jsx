@@ -22,8 +22,8 @@ export default function HoeHetWerkt() {
           <span>📊</span> De Scoreberekening
         </h2>
         <p className="text-jm-muted text-sm leading-relaxed">
-          Elke sessie wordt objectief beoordeeld op basis van je Surfr-data.
-          Omdat we hoogte het belangrijkst vinden, telt deze het zwaarst mee in de formule:
+          Je punten komen uit je Surfr-data.
+          Hoogte telt het zwaarst mee:
         </p>
         <div className="space-y-2">
           {[
@@ -57,8 +57,8 @@ export default function HoeHetWerkt() {
           <span>📲</span> Hoe doe je mee?
         </h2>
         <p className="text-jm-muted text-sm leading-relaxed">
-          Het is essentieel dat je de juiste afbeelding uploadt, anders kan het systeem je score niet automatisch uitlezen.
-          Volg deze stappen:
+          Upload de juiste afbeelding, anders lukt het uitlezen niet.
+          Zo doe je dat:
         </p>
 
         {[
@@ -72,19 +72,19 @@ export default function HoeHetWerkt() {
             nr: 2,
             tekst: 'Scroll naar je sessie en klik onderin op het share-icoontje. Je vindt het naast het hartje, helemaal onderaan de sessiekaart.',
             img: '/stap2.PNG',
-            alt: 'Surfr app — deel-icoontje',
+            alt: 'Deel-icoontje in de Surfr app',
           },
           {
             nr: 3,
             tekst: "Kies voor 'Save Image' of 'Opslaan' om de officiële samenvatting in je galerij te zetten.",
             img: '/stap3.PNG',
-            alt: 'Surfr app — opslaan',
+            alt: 'Opslaan in de Surfr app',
           },
           {
             nr: 4,
             tekst: 'Ga naar de Jump Masters website en upload dit bestand.',
             img: '/stap4.PNG',
-            alt: 'Jump Masters — uploaden',
+            alt: 'Uploaden op Jump Masters',
           },
         ].map(({ nr, tekst, img, alt }) => (
           <div key={nr} className="card p-5 flex flex-row gap-5 items-center">
@@ -142,7 +142,7 @@ export default function HoeHetWerkt() {
           <span>🏆</span> Rankings &amp; Prijzen
         </h2>
         <p className="text-jm-muted text-sm leading-relaxed">
-          Je kunt jezelf op verschillende manieren meten met de rest:
+          Er lopen meerdere klassementen naast elkaar:
         </p>
         <div className="space-y-3">
           {[
@@ -163,8 +163,8 @@ export default function HoeHetWerkt() {
         <div className="border-t border-white/[0.07] pt-4">
           <h3 className="text-base font-black text-white mb-3">De Prijsuitreiking 🎖️</h3>
           <p className="text-jm-muted text-sm leading-relaxed">
-            Aan het eind van het seizoen kronen we de winnaars. Voor de nummers <strong className="text-white">1, 2 en 3</strong> van
-            elke fleet staat er een officiële trofee klaar tijdens de prijsuitreiking.
+            Aan het eind van het seizoen is er een prijsuitreiking. Voor de nummers <strong className="text-white">1, 2 en 3</strong> van
+            elke klasse staat een trofee klaar.
           </p>
           <div className="flex justify-center gap-4 mt-5">
             {[

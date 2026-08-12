@@ -16,7 +16,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { api } from './services/api';
-import { getToken } from './services/auth';
+import { getToken, clearToken, bewaarGebruiker, bewaardeGebruiker } from './services/auth';
 
 function RequireAuth({ user, children }) {
   if (!user) return <Navigate to="/inloggen" replace />;
@@ -29,8 +29,28 @@ export default function App() {
 
   useEffect(() => {
     if (!getToken()) { setUser(null); return; }
-    api.me().then(({ user }) => setUser(user)).catch(() => setUser(null));
+
+    // Meteen tonen wie je bent volgens de vorige keer, zodat je niet naar een
+    // laadscherm kijkt terwijl de server nog wakker wordt.
+    const bekend = bewaardeGebruiker();
+    if (bekend) setUser(bekend);
+
+    api.me()
+      .then(({ user }) => { setUser(user); bewaarGebruiker(user); })
+      .catch((err) => {
+        // Alleen uitloggen als de server je token echt afkeurt. Bij een
+        // server die nog opstart of een haperende verbinding blijf je zitten.
+        if (err.status === 401) { clearToken(); setUser(null); return; }
+        if (!bekend) setUser(null);
+      });
   }, []);
+
+  // Elke wijziging aan de gebruiker ook lokaal bewaren, anders is een nieuwe
+  // profielfoto na het herladen weer weg.
+  function zetGebruiker(nieuw) {
+    setUser(nieuw);
+    if (nieuw) bewaarGebruiker(nieuw);
+  }
 
   // De uitleg verschijnt één keer per account, zodra we weten wie er inlogt.
   useEffect(() => {
@@ -58,11 +78,11 @@ export default function App() {
             <Route path="/nieuws" element={<Nieuws user={user} />} />
             <Route path="/ranglijst" element={<Leaderboards />} />
             <Route path="/hoe-het-werkt" element={<HoeHetWerkt />} />
-            <Route path="/inloggen" element={<Login onLogin={setUser} />} />
-            <Route path="/registreren" element={<Signup onLogin={setUser} />} />
+            <Route path="/inloggen" element={<Login onLogin={zetGebruiker} />} />
+            <Route path="/registreren" element={<Signup onLogin={zetGebruiker} />} />
             <Route path="/rijder/:id" element={<PublicProfile />} />
             <Route path="/uploaden" element={<RequireAuth user={user}><Upload /></RequireAuth>} />
-            <Route path="/profiel" element={<RequireAuth user={user}><Profile user={user} onUserUpdate={setUser} /></RequireAuth>} />
+            <Route path="/profiel" element={<RequireAuth user={user}><Profile user={user} onUserUpdate={zetGebruiker} /></RequireAuth>} />
             <Route path="/beheer" element={<RequireAuth user={user}><AdminDashboard user={user} /></RequireAuth>} />
             {/* Legacy redirects */}
             <Route path="/login" element={<Navigate to="/inloggen" replace />} />

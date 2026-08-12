@@ -9,7 +9,9 @@ const router = express.Router();
 
 function generateToken(userId) {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+    // 90 dagen. Een week is te kort voor een clubsite die je af en toe
+    // opent: dan sta je halverwege het seizoen ineens weer op het inlogscherm.
+    expiresIn: process.env.JWT_EXPIRES_IN || '90d'
   });
 }
 

@@ -149,7 +149,7 @@ export default function Wind({ user }) {
                 return (
                   <div key={opt.key}>
                     <p className="text-xs font-bold mb-2" style={{ color: opt.color }}>
-                      {opt.emoji} {opt.label} — {group.length} {group.length === 1 ? 'rijder' : 'rijders'}
+                      {opt.label} · {group.length} {group.length === 1 ? "rijder" : "rijders"}
                     </p>
                     <div className="space-y-2">
                       {group.map(r => (

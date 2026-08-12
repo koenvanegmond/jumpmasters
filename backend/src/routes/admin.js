@@ -45,15 +45,15 @@ router.patch('/sessions/:id/verify', async (req, res) => {
 
     const session = result.rows[0];
 
-    // Update user's fleet if session was verified
-    if (verified) {
-      const userSessions = await pool.query(
-        'SELECT height_m FROM sessions WHERE user_id = $1 AND verified = true',
-        [session.user_id]
-      );
-      const fleet = determineFleet(userSessions.rows);
-      await pool.query('UPDATE users SET fleet = $1 WHERE id = $2', [fleet, session.user_id]);
-    }
+    // Klasse altijd opnieuw bepalen, ook bij afkeuren. Stond hier eerder
+    // alleen bij goedkeuren, waardoor iemand in een hogere klasse bleef staan
+    // nadat de sprong die hem daar bracht was afgewezen.
+    const userSessions = await pool.query(
+      'SELECT height_m FROM sessions WHERE user_id = $1 AND verified = true',
+      [session.user_id]
+    );
+    const fleet = determineFleet(userSessions.rows);
+    await pool.query('UPDATE users SET fleet = $1 WHERE id = $2', [fleet, session.user_id]);
 
     res.json({ session });
   } catch (err) {

@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import FleetBadge from '../components/FleetBadge';
 import Avatar from '../components/Avatar';
 import Podium from '../components/Podium';
+import FeestweekBlok from '../components/FeestweekBlok';
 import { INTRO_KORT } from '../content';
 import { IconRiders, IconSessions, IconHeight, IconUpload, IconAirtime, IconDistance } from '../components/Icons';
 
@@ -44,6 +45,14 @@ function KiteDecoration() {
 export default function Home({ user }) {
   const [stats, setStats] = useState(null);
   const [top, setTop] = useState([]);
+  const [feestweek, setFeestweek] = useState(null);
+  const [feestweekTop, setFeestweekTop] = useState([]);
+
+  useEffect(() => {
+    api.leaderboardFeestweek()
+      .then(({ periode, data }) => { setFeestweek(periode); setFeestweekTop(data); })
+      .catch(() => setFeestweek(null));
+  }, []);
 
   useEffect(() => {
     api.leaderboardOverall().then((data) => {
@@ -105,15 +114,22 @@ export default function Home({ user }) {
         )}
       </div>
 
+      {/* Feestweek staat bovenaan zolang hij loopt of eraan komt. */}
+      {feestweek && (
+        <div className="order-2 md:order-2 mb-4 md:mb-8">
+          <FeestweekBlok periode={feestweek} entries={feestweekTop} />
+        </div>
+      )}
+
       {/* Stats row */}
-      <div className="order-3 md:order-2 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+      <div className="order-4 md:order-4 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
         <StatCard icon={<IconRiders className="w-5 h-5" />} label="Deelnemers" value={stats?.riders} />
         <StatCard icon={<IconSessions className="w-5 h-5" />} label="Totaal Sessies" value={stats?.sessions} />
         <StatCard icon={<IconHeight className="w-5 h-5" />} label="Hoogste Jump" value={stats?.topHeight ? `${parseFloat(stats.topHeight).toFixed(1)} m` : null} />
       </div>
 
       {/* Top riders */}
-      <div className="order-2 md:order-3 card p-5 md:p-6 mb-4 md:mb-0">
+      <div className="order-3 md:order-3 card p-5 md:p-6 mb-4 md:mb-0">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-black text-white">Top rijders 2026</h2>
           <img src="/logo-text.png" alt="" className="h-5 opacity-30"

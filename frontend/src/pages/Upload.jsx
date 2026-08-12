@@ -118,8 +118,8 @@ export default function Upload() {
       // niemand vastloopt op een foto die de scan niet aankan.
       const storing = err.status === 503 || err.data?.ocr_unavailable;
       setError(storing
-        ? 'De automatische scan ligt er even uit. Vul je sessie hieronder zelf in — de beheerder controleert hem daarna.'
-        : 'We konden de gegevens niet uit deze foto halen. Probeer eerst een andere foto — dat lost het meestal op.');
+        ? 'De automatische scan ligt er even uit. Vul je sessie hieronder zelf in. De beheerder controleert hem daarna.'
+        : 'We konden de gegevens niet uit deze foto halen. Probeer een andere foto, dat lost het meestal op.');
       setScanMislukt(true);
       setPreview(null);
       setStep('idle');
@@ -205,7 +205,7 @@ export default function Upload() {
           )}
           {scanToken && (
             <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
-              ✓ Screenshot uitgelezen — deze cijfers staan vast, zo blijft de ranglijst eerlijk.
+              ✓ Screenshot uitgelezen. Deze cijfers staan vast, zo blijft de ranglijst eerlijk.
               <span className="block text-emerald-400/70 mt-1">
                 Klopt er iets niet? Laat het de beheerder weten, die kan het aanpassen.
               </span>

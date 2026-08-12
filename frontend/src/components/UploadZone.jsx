@@ -29,7 +29,7 @@ export default function UploadZone({ onFile }) {
         We lezen hoogte, vliegtijd en afstand er zelf uit
       </p>
       <p className="text-xs mt-2" style={{ color: 'var(--jm-muted)' }}>
-        Tik om te kiezen, of sleep hem hierheen — JPEG of PNG, max 5MB
+        Tik om te kiezen of sleep hem hierheen. JPEG of PNG, max 5MB.
       </p>
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/jpg" className="hidden"
         onChange={(e) => e.target.files[0] && onFile(e.target.files[0])} />

@@ -3,6 +3,7 @@ import { api } from '../services/api';
 import FleetBadge from '../components/FleetBadge';
 import SessionCard from '../components/SessionCard';
 import Avatar from '../components/Avatar';
+import FotoBijsnijden from '../components/FotoBijsnijden';
 
 function StatCard({ label, value, sub }) {
   return (
@@ -19,6 +20,7 @@ export default function Profile({ user, onUserUpdate }) {
   const [error, setError] = useState('');
   const [pwForm, setPwForm] = useState({ current: '', next: '' });
   const [pwMsg, setPwMsg] = useState('');
+  const [teSnijden, setTeSnijden] = useState(null);
   const avatarRef = useRef();
 
   useEffect(() => {
@@ -32,6 +34,7 @@ export default function Profile({ user, onUserUpdate }) {
     try {
       const { avatar_url } = await api.uploadAvatar(fd);
       onUserUpdate({ ...user, avatar_url });
+      setTeSnijden(null);
     } catch (err) { alert(err.message); }
   }
 
@@ -61,7 +64,10 @@ export default function Profile({ user, onUserUpdate }) {
             Wijzigen
           </div>
           <input ref={avatarRef} type="file" accept="image/*" className="hidden"
-            onChange={(e) => e.target.files[0] && handleAvatar(e.target.files[0])} />
+            onChange={(e) => {
+              if (e.target.files[0]) setTeSnijden(e.target.files[0]);
+              e.target.value = ''; // zelfde foto opnieuw kiezen moet ook werken
+            }} />
         </div>
         <div>
           <h1 className="text-xl font-black text-white">{user.name}</h1>
@@ -121,6 +127,14 @@ export default function Profile({ user, onUserUpdate }) {
           </button>
         </form>
       </div>
+
+      {teSnijden && (
+        <FotoBijsnijden
+          bestand={teSnijden}
+          onKlaar={handleAvatar}
+          onAnnuleer={() => setTeSnijden(null)}
+        />
+      )}
     </div>
   );
 }
