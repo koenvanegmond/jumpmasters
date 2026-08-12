@@ -195,7 +195,7 @@ router.get('/feed', async (req, res) => {
               (s.media_url IS NOT NULL) AS has_media,
               s.media_type, s.caption, s.created_at,
               u.id as user_id, u.name as user_name,
-              (u.avatar_url IS NOT NULL) AS has_avatar, u.fleet,
+              u.avatar_updated_at AS avatar_v, u.fleet,
               array_agg(tu.name) FILTER (WHERE tu.name IS NOT NULL) AS tagged_names,
               -- Likes en reacties meteen meesturen. De feed vroeg dit eerst
               -- per post apart op: twaalf posts waren twaalf extra rondjes.
@@ -215,9 +215,9 @@ router.get('/feed', async (req, res) => {
        LIMIT 50`,
       [mij]
     );
-    res.json(result.rows.map(({ has_media, has_avatar, ...s }) => ({
+    res.json(result.rows.map(({ has_media, avatar_v, ...s }) => ({
       ...s,
-      avatar_url: avatarUrl(req, s.user_id, has_avatar),
+      avatar_url: avatarUrl(req, s.user_id, avatar_v),
       media_url: sessieMediaUrl(req, s.id, has_media)
     })));
   } catch (err) {

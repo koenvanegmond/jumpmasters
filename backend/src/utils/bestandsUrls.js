@@ -9,8 +9,14 @@ function basis(req) {
   return `${req.protocol}://${req.get('host')}`;
 }
 
-function avatarUrl(req, userId, waarde) {
-  return waarde ? `${basis(req)}/api/users/${userId}/avatar` : null;
+// De versie in de URL is het moment waarop de foto voor het laatst gewijzigd
+// is. Zonder dat blijft de URL gelijk als je een nieuwe foto uploadt, en toont
+// de browser een dag lang de oude uit zijn cache — precies wat er misging.
+// gewijzigdOp is avatar_updated_at: null als iemand geen foto heeft, en
+// anders meteen het versienummer. Eén waarde die twee vragen beantwoordt.
+function avatarUrl(req, userId, gewijzigdOp) {
+  if (!gewijzigdOp) return null;
+  return `${basis(req)}/api/users/${userId}/avatar?v=${new Date(gewijzigdOp).getTime()}`;
 }
 
 function sessieMediaUrl(req, sessieId, waarde) {

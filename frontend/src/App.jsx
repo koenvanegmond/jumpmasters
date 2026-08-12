@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import MobileTabBar from './components/MobileTabBar';
+import Onboarding, { uitlegAlGezien } from './components/Onboarding';
 import Home from './pages/Home';
 import Feed from './pages/Feed';
 import Nieuws from './pages/Nieuws';
@@ -24,11 +25,17 @@ function RequireAuth({ user, children }) {
 
 export default function App() {
   const [user, setUser] = useState(undefined);
+  const [toonUitleg, setToonUitleg] = useState(false);
 
   useEffect(() => {
     if (!getToken()) { setUser(null); return; }
     api.me().then(({ user }) => setUser(user)).catch(() => setUser(null));
   }, []);
+
+  // De uitleg verschijnt één keer per account, zodra we weten wie er inlogt.
+  useEffect(() => {
+    if (user?.id && !uitlegAlGezien(user.id)) setToonUitleg(true);
+  }, [user?.id]);
 
   if (user === undefined) {
     return (
@@ -68,6 +75,9 @@ export default function App() {
           </Routes>
         </main>
         <MobileTabBar />
+        {toonUitleg && user && (
+          <Onboarding user={user} onKlaar={() => setToonUitleg(false)} />
+        )}
       </div>
     </BrowserRouter>
   );

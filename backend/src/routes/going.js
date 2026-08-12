@@ -28,13 +28,13 @@ router.get('/today', async (req, res) => {
   const today = vandaagNL();
   try {
     const result = await pool.query(
-      `SELECT g.status, u.id as user_id, u.name, (u.avatar_url IS NOT NULL) AS has_avatar, u.fleet
+      `SELECT g.status, u.id as user_id, u.name, u.avatar_updated_at AS avatar_v, u.fleet
        FROM going g JOIN users u ON u.id = g.user_id
        WHERE g.date = $1
        ORDER BY g.status, u.name`,
       [today]
     );
-    res.json(result.rows.map(r => ({ ...r, avatar_url: avatarUrl(req, r.user_id, r.has_avatar) })));
+    res.json(result.rows.map(r => ({ ...r, avatar_url: avatarUrl(req, r.user_id, r.avatar_v) })));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });

@@ -80,12 +80,12 @@ router.get('/likes/:sessionId', async (req, res) => {
 router.get('/comments/:sessionId', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT c.id, c.content, c.created_at, u.id as user_id, u.name, (u.avatar_url IS NOT NULL) AS has_avatar
+      `SELECT c.id, c.content, c.created_at, u.id as user_id, u.name, u.avatar_updated_at AS avatar_v
        FROM comments c JOIN users u ON u.id=c.user_id
        WHERE c.session_id=$1 ORDER BY c.created_at ASC`,
       [req.params.sessionId]
     );
-    res.json(result.rows.map(c => ({ ...c, avatar_url: avatarUrl(req, c.user_id, c.has_avatar) })));
+    res.json(result.rows.map(c => ({ ...c, avatar_url: avatarUrl(req, c.user_id, c.avatar_v) })));
   } catch (err) { console.error(err); res.status(500).json({ error: 'Serverfout' }); }
 });
 
@@ -106,7 +106,7 @@ router.post('/comment/:sessionId', authenticate, async (req, res) => {
         [session.rows[0].user_id, req.user.id, req.params.sessionId, `${req.user.name} reageerde: "${content.trim().slice(0,40)}"`]
       );
     }
-    res.status(201).json({ ...result.rows[0], name: req.user.name, avatar_url: avatarUrl(req, req.user.id, req.user.has_avatar) });
+    res.status(201).json({ ...result.rows[0], name: req.user.name, avatar_url: avatarUrl(req, req.user.id, req.user.avatar_v) });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Serverfout' }); }
 });
 
@@ -122,15 +122,15 @@ router.delete('/comment/:commentId', authenticate, async (req, res) => {
 router.get('/notifications', authenticate, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT n.*, u.name as from_name, (u.avatar_url IS NOT NULL) AS has_avatar
+      `SELECT n.*, u.name as from_name, u.avatar_updated_at AS avatar_v
        FROM notifications n JOIN users u ON u.id=n.from_user_id
        WHERE n.user_id=$1 ORDER BY n.created_at DESC LIMIT 20`,
       [req.user.id]
     );
     const unread = await pool.query('SELECT COUNT(*) FROM notifications WHERE user_id=$1 AND read=false', [req.user.id]);
     res.json({
-      notifications: result.rows.map(({ has_avatar, ...n }) => ({
-        ...n, from_avatar: avatarUrl(req, n.from_user_id, has_avatar)
+      notifications: result.rows.map(({ avatar_v, ...n }) => ({
+        ...n, from_avatar: avatarUrl(req, n.from_user_id, avatar_v)
       })),
       unread: parseInt(unread.rows[0].count)
     });

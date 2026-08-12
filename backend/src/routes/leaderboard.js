@@ -11,7 +11,7 @@ const router = express.Router();
 async function buildLeaderboard(req, whereClause, params) {
   // Alleen of er een avatar is, niet de base64 zelf — zie bestandsUrls.js.
   const usersResult = await pool.query(
-    `SELECT id, name, fleet, (avatar_url IS NOT NULL) AS has_avatar FROM users ${whereClause}`,
+    `SELECT id, name, fleet, avatar_updated_at AS avatar_v FROM users ${whereClause}`,
     params
   );
   if (usersResult.rows.length === 0) return [];
@@ -35,7 +35,7 @@ async function buildLeaderboard(req, whereClause, params) {
         user_id: user.id,
         name: user.name,
         fleet: user.fleet,
-        avatar_url: avatarUrl(req, user.id, user.has_avatar),
+        avatar_url: avatarUrl(req, user.id, user.avatar_v),
         total_points: calculateTotalPoints(sessions),
         sessions_count: verified.length,
         max_height:   verified.length ? Math.max(...verified.map(s => parseFloat(s.height_m)))   : 0,
@@ -70,7 +70,7 @@ router.get('/daily', async (req, res) => {
     const result = await pool.query(
       `SELECT s.points, s.height_m, s.airtime_s, s.distance_m, s.verified,
               u.id AS user_id, u.name, u.fleet,
-              (u.avatar_url IS NOT NULL) AS has_avatar
+              u.avatar_updated_at AS avatar_v
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.verified = true
@@ -82,7 +82,7 @@ router.get('/daily', async (req, res) => {
       if (!perRijder.has(row.user_id)) {
         perRijder.set(row.user_id, {
           user_id: row.user_id, name: row.name,
-          fleet: row.fleet, has_avatar: row.has_avatar, sessions: []
+          fleet: row.fleet, avatar_v: row.avatar_v, sessions: []
         });
       }
       perRijder.get(row.user_id).sessions.push(row);
@@ -93,7 +93,7 @@ router.get('/daily', async (req, res) => {
         user_id: r.user_id,
         name: r.name,
         fleet: r.fleet,
-        avatar_url: avatarUrl(req, r.user_id, r.has_avatar),
+        avatar_url: avatarUrl(req, r.user_id, r.avatar_v),
         // Beste vijf van vandaag — zelfde functie als het seizoensklassement.
         total_points: calculateTotalPoints(r.sessions),
         // Aantal en records gaan wél over alle sessies van vandaag: je beste
@@ -107,6 +107,68 @@ router.get('/daily', async (req, res) => {
       .map((entry, index) => ({ rank: index + 1, ...entry }));
 
     res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Feestweek: begin- en einddatum komen uit de omgeving, zodat de periode
+// verzet kan worden zonder de code aan te raken. Staan ze er niet, dan meldt
+// het endpoint dat netjes en verbergt de frontend het tabblad.
+const FEESTWEEK_START = process.env.FEESTWEEK_START || null;
+const FEESTWEEK_EIND  = process.env.FEESTWEEK_EIND  || null;
+const FEESTWEEK_BESTE = parseInt(process.env.FEESTWEEK_BESTE || '2', 10);
+
+// GET /api/leaderboard/feestweek — alleen sessies binnen de feestweek, en
+// hier tellen je twee beste mee in plaats van vijf.
+router.get('/feestweek', async (req, res) => {
+  if (!FEESTWEEK_START || !FEESTWEEK_EIND) {
+    return res.status(404).json({
+      error: 'De feestweekperiode is nog niet ingesteld',
+      niet_ingesteld: true
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT s.points, s.height_m, s.airtime_s, s.distance_m, s.verified,
+              u.id AS user_id, u.name, u.fleet,
+              u.avatar_updated_at AS avatar_v
+       FROM sessions s
+       JOIN users u ON u.id = s.user_id
+       WHERE s.verified = true
+         AND s.date BETWEEN $1::date AND $2::date`,
+      [FEESTWEEK_START, FEESTWEEK_EIND]
+    );
+
+    const perRijder = new Map();
+    for (const row of result.rows) {
+      if (!perRijder.has(row.user_id)) {
+        perRijder.set(row.user_id, {
+          user_id: row.user_id, name: row.name,
+          fleet: row.fleet, avatar_v: row.avatar_v, sessions: []
+        });
+      }
+      perRijder.get(row.user_id).sessions.push(row);
+    }
+
+    const data = [...perRijder.values()]
+      .map((r) => ({
+        user_id: r.user_id,
+        name: r.name,
+        fleet: r.fleet,
+        avatar_url: avatarUrl(req, r.user_id, r.avatar_v),
+        total_points: calculateTotalPoints(r.sessions, FEESTWEEK_BESTE),
+        sessions_count: r.sessions.length,
+        max_height:   Math.max(...r.sessions.map(s => parseFloat(s.height_m))),
+        max_airtime:  Math.max(...r.sessions.map(s => parseFloat(s.airtime_s))),
+        max_distance: Math.max(...r.sessions.map(s => parseFloat(s.distance_m)))
+      }))
+      .sort((a, b) => b.total_points - a.total_points)
+      .map((entry, index) => ({ rank: index + 1, ...entry }));
+
+    res.json({ periode: { van: FEESTWEEK_START, tot: FEESTWEEK_EIND, beste: FEESTWEEK_BESTE }, data });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

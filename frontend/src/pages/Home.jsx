@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import FleetBadge from '../components/FleetBadge';
 import Avatar from '../components/Avatar';
 import Podium from '../components/Podium';
+import { INTRO_KORT } from '../content';
 import { IconRiders, IconSessions, IconHeight, IconUpload, IconAirtime, IconDistance } from '../components/Icons';
 
 function StatCard({ icon, label, value, sub }) {
@@ -73,8 +74,7 @@ export default function Home({ user }) {
             Het kitesurf seizoen<br />is begonnen!
           </h1>
           <p className="text-jm-muted text-lg max-w-xl mx-auto mb-8">
-            Klaar voor de top? Upload je Surfr-score en daag de rest uit.<br className="hidden sm:block" />
-            Laat zien wie de echte Jumpmaster is!
+            {INTRO_KORT}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to={user ? "/uploaden" : "/registreren"} className="btn-primary text-base justify-center">
@@ -88,20 +88,22 @@ export default function Home({ user }) {
         </div>
       </div>
 
-      {/* Op mobiel is de hero weg, dus krijgen bezoekers zonder account hier
-          nog één keer de kans om mee te doen. */}
-      {!user && (
-        <Link to="/registreren"
-          className="order-1 md:hidden card p-4 mb-4 flex items-center gap-3 hover:border-white/15 transition-colors">
-          <img src="/logo-full.png" alt="" className="h-10 w-auto flex-shrink-0"
+      {/* Op mobiel is de hero weg, maar de introtekst hoort er wel te staan —
+          dezelfde tekst als op desktop, uit content.js. */}
+      <div className="order-1 md:hidden card p-4 mb-4">
+        <div className="flex items-center gap-3">
+          <img src="/logo-full.png" alt="" className="h-11 w-auto flex-shrink-0"
             onError={(e) => { e.target.style.display = 'none'; }} />
-          <span className="flex-1 min-w-0">
-            <span className="block font-bold text-white text-sm">Doe mee met de competitie</span>
-            <span className="block text-xs text-jm-muted mt-0.5">Upload je Surfr-score en pak een plek op het podium</span>
-          </span>
-          <span className="text-jm-pink font-black text-lg flex-shrink-0">→</span>
-        </Link>
-      )}
+          <p className="text-sm text-jm-muted leading-relaxed">{INTRO_KORT}</p>
+        </div>
+        {!user && (
+          <Link to="/registreren"
+            className="mt-3 pt-3 border-t border-white/[0.07] flex items-center justify-between text-sm font-bold text-jm-pink">
+            Doe mee met de competitie
+            <span className="text-lg">→</span>
+          </Link>
+        )}
+      </div>
 
       {/* Stats row */}
       <div className="order-3 md:order-2 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">

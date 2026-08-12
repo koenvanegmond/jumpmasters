@@ -12,7 +12,7 @@ async function authenticate(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const result = await pool.query(
-      `SELECT id, email, name, fleet, is_admin, (avatar_url IS NOT NULL) AS has_avatar
+      `SELECT id, email, name, fleet, is_admin, avatar_updated_at AS avatar_v
        FROM users WHERE id = $1`,
       [decoded.userId]
     );

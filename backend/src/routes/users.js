@@ -7,6 +7,16 @@ const { avatarUrl, sessieMediaUrl, stuurBestand } = require('../utils/bestandsUr
 
 const router = express.Router();
 
+// Wanneer is de profielfoto voor het laatst gewijzigd? Dat getal hangt in de
+// avatar-URL, zodat een nieuwe foto meteen zichtbaar is in plaats van pas
+// nadat de cache van de browser verlopen is. Bestaande foto's krijgen eenmalig
+// een startwaarde, anders zouden ze als 'geen foto' gelden.
+pool.query(`
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_updated_at TIMESTAMP;
+  UPDATE users SET avatar_updated_at = NOW()
+   WHERE avatar_url IS NOT NULL AND avatar_updated_at IS NULL;
+`).catch(console.error);
+
 const avatarUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 2 * 1024 * 1024 },
@@ -22,10 +32,10 @@ router.get('/', authenticate, async (req, res) => {
   if (!q || q.length < 2) return res.json([]);
   try {
     const result = await pool.query(
-      `SELECT id, name, fleet, (avatar_url IS NOT NULL) AS has_avatar FROM users WHERE name ILIKE $1 AND id != $2 LIMIT 10`,
+      `SELECT id, name, fleet, avatar_updated_at AS avatar_v FROM users WHERE name ILIKE $1 AND id != $2 LIMIT 10`,
       [`%${q}%`, req.user.id]
     );
-    res.json(result.rows.map(({ has_avatar, ...u }) => ({ ...u, avatar_url: avatarUrl(req, u.id, has_avatar) })));
+    res.json(result.rows.map(({ avatar_v, ...u }) => ({ ...u, avatar_url: avatarUrl(req, u.id, avatar_v) })));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });
@@ -48,7 +58,7 @@ router.get('/:id/stats', async (req, res) => {
   const { id } = req.params;
   try {
     const userResult = await pool.query(
-      'SELECT id, name, email, fleet, (avatar_url IS NOT NULL) AS has_avatar FROM users WHERE id = $1',
+      'SELECT id, name, email, fleet, avatar_updated_at AS avatar_v FROM users WHERE id = $1',
       [id]
     );
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'Gebruiker niet gevonden' });
@@ -91,9 +101,9 @@ router.get('/:id/stats', async (req, res) => {
       if (uUser.rows[0].fleet === user.fleet && uPoints > total_points) rank_in_fleet++;
     }));
 
-    const { has_avatar, ...gebruiker } = user;
+    const { avatar_v, ...gebruiker } = user;
     res.json({
-      user: { ...gebruiker, avatar_url: avatarUrl(req, user.id, has_avatar) },
+      user: { ...gebruiker, avatar_url: avatarUrl(req, user.id, avatar_v) },
       stats: { rank_overall, rank_in_fleet, total_points, sessions_count: verified.length, max_height, avg_height, max_airtime, max_distance },
       // screenshot_url zat hier ook in maar wordt door geen enkel scherm
       // gebruikt behalve het beheerpaneel — dat scheelde megabytes per profiel.
@@ -113,10 +123,15 @@ router.get('/:id/stats', async (req, res) => {
 // POST /api/users/avatar
 router.post('/avatar', authenticate, avatarUpload.single('avatar'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Geen bestand geüpload' });
-  const avatar_url = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  const data = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
   try {
-    await pool.query('UPDATE users SET avatar_url = $1 WHERE id = $2', [avatar_url, req.user.id]);
-    res.json({ avatar_url });
+    // avatar_updated_at meteen bijwerken: dat getal zit in de URL, dus daarmee
+    // ziet de browser dat dit een andere foto is dan die hij in zijn cache heeft.
+    const r = await pool.query(
+      'UPDATE users SET avatar_url = $1, avatar_updated_at = NOW() WHERE id = $2 RETURNING avatar_updated_at',
+      [data, req.user.id]
+    );
+    res.json({ avatar_url: avatarUrl(req, req.user.id, r.rows[0].avatar_updated_at) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });

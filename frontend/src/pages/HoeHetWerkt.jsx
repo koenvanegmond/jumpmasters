@@ -1,3 +1,5 @@
+import { INTRO_LANG, SURFR_VERMELDING } from '../content';
+
 export default function HoeHetWerkt() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-10">
@@ -7,9 +9,10 @@ export default function HoeHetWerkt() {
         <div className="text-5xl mb-2">🏄‍♂️</div>
         <h1 className="text-3xl font-black text-white">Jump Masters</h1>
         <p className="text-jm-muted text-base max-w-xl mx-auto leading-relaxed">
-          Jump Masters is de interne kitesurf competitie van Skuytevaert.
-          Hier draait alles om fun, progressie en gezonde competitie op het water.
-          Upload je beste sessies en zie direct hoe jij scoort ten opzichte van de andere leden.
+          {INTRO_LANG}
+        </p>
+        <p className="text-sm text-jm-pink/90 max-w-xl mx-auto">
+          {SURFR_VERMELDING}
         </p>
       </div>
 

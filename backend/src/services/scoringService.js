@@ -3,13 +3,16 @@ function calculateSessionPoints(height, airtime, distance) {
   return Math.round((rawScore / 10) * 100) / 100;
 }
 
-function calculateTotalPoints(sessions) {
+// Standaard tellen je vijf beste sessies mee. Het feestweekklassement gebruikt
+// dezelfde regel met een ander aantal, zodat er maar één plek is waar bepaald
+// wordt hoe een totaal tot stand komt.
+function calculateTotalPoints(sessions, aantalBeste = 5) {
   const sorted = sessions
     .filter(s => s.verified)
     .sort((a, b) => b.points - a.points);
 
-  const top5 = sorted.slice(0, 5);
-  const total = top5.reduce((sum, s) => sum + parseFloat(s.points), 0);
+  const beste = sorted.slice(0, aantalBeste);
+  const total = beste.reduce((sum, s) => sum + parseFloat(s.points), 0);
   return Math.round(total * 100) / 100;
 }
 

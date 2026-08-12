@@ -2,28 +2,46 @@ import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import LeaderboardTable from '../components/LeaderboardTable';
 
-const KLASSEN = ['Vandaag', 'Algeheel', 'Bronze', 'Silver', 'Gold', 'Platinum'];
+const VASTE_KLASSEN = ['Vandaag', 'Algeheel', 'Bronze', 'Silver', 'Gold', 'Platinum'];
 
-const ONDERTITELS = {
-  Vandaag: 'Je 5 beste sessies van vandaag tellen mee',
-  Algeheel: 'Top 5 sessies tellen mee voor het eindklassement',
-};
-
-function haalOp(klasse) {
-  if (klasse === 'Vandaag') return api.leaderboardDaily();
-  if (klasse === 'Algeheel') return api.leaderboardOverall();
-  return api.leaderboardFleet(klasse);
+function datumKort(iso) {
+  return new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
 }
 
 export default function Leaderboards() {
   const [actief, setActief] = useState('Vandaag');
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [feestweek, setFeestweek] = useState(null); // null = nog onbekend, false = niet ingesteld
+
+  // Het feestweek-tabblad verschijnt alleen als de periode is ingesteld.
+  useEffect(() => {
+    api.leaderboardFeestweek()
+      .then(({ periode, data: entries }) => {
+        setFeestweek(periode);
+        setData((prev) => ({ ...prev, Feestweek: entries }));
+      })
+      .catch(() => setFeestweek(false));
+  }, []);
+
+  const klassen = feestweek ? ['Feestweek', ...VASTE_KLASSEN] : VASTE_KLASSEN;
+
+  const ondertitels = {
+    Vandaag: 'Je 5 beste sessies van vandaag tellen mee',
+    Algeheel: 'Top 5 sessies tellen mee voor het eindklassement',
+    Feestweek: feestweek
+      ? `${datumKort(feestweek.van)} t/m ${datumKort(feestweek.tot)} · je ${feestweek.beste} beste sessies tellen mee`
+      : '',
+  };
 
   useEffect(() => {
-    if (data[actief]) return;
+    if (data[actief] || actief === 'Feestweek') return;
     setLoading(true);
-    haalOp(actief)
+    const ophalen =
+      actief === 'Vandaag'  ? api.leaderboardDaily() :
+      actief === 'Algeheel' ? api.leaderboardOverall() :
+                              api.leaderboardFleet(actief);
+    ophalen
       .then((entries) => setData((prev) => ({ ...prev, [actief]: entries })))
       .catch(() => setData((prev) => ({ ...prev, [actief]: [] })))
       .finally(() => setLoading(false));
@@ -36,7 +54,7 @@ export default function Leaderboards() {
           <div>
             <h1 className="text-3xl font-black text-white">Ranglijst 2026</h1>
             <p className="text-jm-muted mt-1">
-              {ONDERTITELS[actief] || `Klassement binnen ${actief}`}
+              {ondertitels[actief] || `Klassement binnen ${actief}`}
             </p>
           </div>
           <img src="/logo-text.png" alt="" className="h-7 hidden sm:block opacity-40"
@@ -46,7 +64,7 @@ export default function Leaderboards() {
 
       {/* Fleet tabs */}
       <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
-        {KLASSEN.map((k) => (
+        {klassen.map((k) => (
           <button key={k} onClick={() => setActief(k)}
             className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
               actief === k
@@ -61,7 +79,8 @@ export default function Leaderboards() {
       <div className="card p-4 md:p-6">
         {loading
           ? <div className="text-center py-16 text-jm-muted">Laden...</div>
-          : <LeaderboardTable entries={data[actief] || []} showFleet={actief === 'Algeheel' || actief === 'Vandaag'} />}
+          : <LeaderboardTable entries={data[actief] || []}
+              showFleet={['Algeheel', 'Vandaag', 'Feestweek'].includes(actief)} />}
       </div>
     </div>
   );

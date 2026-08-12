@@ -57,7 +57,7 @@ router.post('/login', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, email, name, fleet, is_admin, password_hash,
-              (avatar_url IS NOT NULL) AS has_avatar
+              avatar_updated_at AS avatar_v
        FROM users WHERE email = $1`,
       [email.toLowerCase()]
     );
@@ -73,8 +73,8 @@ router.post('/login', async (req, res) => {
     }
 
     const token = generateToken(user.id);
-    const { password_hash, has_avatar, ...safeUser } = user;
-    res.json({ token, user: { ...safeUser, avatar_url: avatarUrl(req, user.id, has_avatar) } });
+    const { password_hash, avatar_v, ...safeUser } = user;
+    res.json({ token, user: { ...safeUser, avatar_url: avatarUrl(req, user.id, avatar_v) } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -83,8 +83,8 @@ router.post('/login', async (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', authenticate, (req, res) => {
-  const { has_avatar, ...gebruiker } = req.user;
-  res.json({ user: { ...gebruiker, avatar_url: avatarUrl(req, req.user.id, has_avatar) } });
+  const { avatar_v, ...gebruiker } = req.user;
+  res.json({ user: { ...gebruiker, avatar_url: avatarUrl(req, req.user.id, avatar_v) } });
 });
 
 // PATCH /api/auth/password

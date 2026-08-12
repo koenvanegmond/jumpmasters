@@ -43,6 +43,7 @@ export const api = {
   // Leaderboard
   leaderboardOverall: () => request('/leaderboard/overall'),
   leaderboardDaily: () => request('/leaderboard/daily'),
+  leaderboardFeestweek: () => request('/leaderboard/feestweek'),
   leaderboardFleet: (fleet) => request(`/leaderboard/fleet/${fleet}`),
 
   // Users
