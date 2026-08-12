@@ -4,8 +4,9 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db/connection');
 const { authenticate } = require('../middleware/auth');
 const { extractSurfrData } = require('../services/ocrService');
-const { calculateSessionPoints, determineFleet } = require('../services/scoringService');
+const { calculateSessionPoints, calculateTotalPoints, determineFleet } = require('../services/scoringService');
 const { avatarUrl, sessieMediaUrl, stuurBestand } = require('../utils/bestandsUrls');
+const { stuurNaar, stuurNaarIedereenBehalve } = require('../services/pushService');
 
 const router = express.Router();
 
@@ -62,6 +63,57 @@ async function bepaalRecord(userId, sessie) {
   };
 }
 
+// Wie stond er vóór deze sessie boven de uploader, en staat daar nu onder?
+// Die mensen krijgen bericht dat ze ingehaald zijn. We rekenen het klassement
+// twee keer uit: één keer met de nieuwe sessie meegeteld, één keer zonder.
+async function wieZijnIngehaald(uploaderId, nieuweSessieId) {
+  const [gebruikers, sessies] = await Promise.all([
+    pool.query('SELECT id, name FROM users'),
+    pool.query('SELECT id, user_id, points, verified FROM sessions'),
+  ]);
+
+  const per = new Map(gebruikers.rows.map(u => [u.id, []]));
+  for (const s of sessies.rows) per.get(s.user_id)?.push(s);
+
+  const mijnSessies = per.get(uploaderId) || [];
+  const na = calculateTotalPoints(mijnSessies);
+  const voor = calculateTotalPoints(mijnSessies.filter(s => s.id !== nieuweSessieId));
+
+  // Alleen als je er echt op vooruit bent gegaan kun je iemand passeren.
+  if (na <= voor) return [];
+
+  return gebruikers.rows
+    .filter(u => u.id !== uploaderId)
+    .map(u => ({ id: u.id, punten: calculateTotalPoints(per.get(u.id) || []) }))
+    .filter(u => u.punten > voor && u.punten < na)
+    .map(u => u.id);
+}
+
+// Meldingen versturen mag het opslaan nooit ophouden of laten mislukken.
+async function meldNieuweSessie(user, session) {
+  try {
+    const punten = parseFloat(session.points).toFixed(2);
+    const hoogte = parseFloat(session.height_m).toFixed(1);
+
+    await stuurNaarIedereenBehalve(user.id, {
+      titel: `${user.name} sprong ${hoogte} m`,
+      tekst: `${punten} punten. Kijk waar je nu staat.`,
+      pad: '/feed',
+    });
+
+    const ingehaald = await wieZijnIngehaald(user.id, session.id);
+    if (ingehaald.length) {
+      await stuurNaar(ingehaald, {
+        titel: `${user.name} is je voorbij`,
+        tekst: 'Je bent een plek gezakt in de ranglijst.',
+        pad: '/ranglijst',
+      });
+    }
+  } catch (err) {
+    console.error('Melden van nieuwe sessie mislukt:', err.message);
+  }
+}
+
 async function saveTags(sessionId, taggedUserIds, taggerName, taggerId) {
   if (!taggedUserIds || taggedUserIds.length === 0) return;
   for (const uid of taggedUserIds) {
@@ -76,6 +128,12 @@ async function saveTags(sessionId, taggedUserIds, taggerName, taggerId) {
          ON CONFLICT DO NOTHING`,
         [uid, taggerId, sessionId, `${taggerName} heeft jou getagd in een sessie`]
       ).catch(() => {});
+
+      stuurNaar(uid, {
+        titel: `${taggerName} daagt je uit`,
+        tekst: 'Je bent getagd in een sessie.',
+        pad: '/feed',
+      }).catch(() => {});
     }
   }
 }
@@ -158,6 +216,7 @@ router.post('/confirm', authenticate, upload.single('media'), async (req, res) =
     await saveTags(session.id, tagIds, req.user.name, req.user.id);
     await updateUserFleet(req.user.id);
     const record = await bepaalRecord(req.user.id, session);
+    if (session.verified) meldNieuweSessie(req.user, session);
     res.status(201).json({ session, record });
   } catch (err) {
     console.error(err);
@@ -194,6 +253,7 @@ router.post('/manual', authenticate, upload.single('media'), async (req, res) =>
     await saveTags(session.id, tagIds, req.user.name, req.user.id);
     await updateUserFleet(req.user.id);
     const record = await bepaalRecord(req.user.id, session);
+    if (session.verified) meldNieuweSessie(req.user, session);
     res.status(201).json({ session, record });
   } catch (err) {
     console.error(err);

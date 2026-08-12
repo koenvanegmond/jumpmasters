@@ -73,6 +73,12 @@ export const api = {
   getNotifications: () => request('/social/notifications'),
   markNotificationsRead: () => request('/social/notifications/read', { method: 'PATCH' }),
 
+  // Pushmeldingen
+  pushSleutel: () => request('/push/sleutel'),
+  pushAbonneer: (abonnement) => request('/push/abonneer', { method: 'POST', body: JSON.stringify(abonnement) }),
+  pushAfmelden: (body) => request('/push/abonneer', { method: 'DELETE', body: JSON.stringify(body) }),
+  pushStatus: () => request('/push/status'),
+
   // Admin
   adminPending: () => request('/admin/sessions/pending'),
   adminVerify: (id, verified) => request(`/admin/sessions/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ verified }) }),

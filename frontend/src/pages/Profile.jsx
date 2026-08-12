@@ -5,6 +5,7 @@ import SessionCard from '../components/SessionCard';
 import Avatar from '../components/Avatar';
 import FotoBijsnijden from '../components/FotoBijsnijden';
 import Voortgang from '../components/Voortgang';
+import MeldingenKnop from '../components/MeldingenKnop';
 
 function StatCard({ label, value, sub }) {
   return (
@@ -107,6 +108,8 @@ export default function Profile({ user, onUserUpdate }) {
           </div>
         )}
       </div>
+
+      <MeldingenKnop />
 
       {/* Change password */}
       <div className="card p-6">
