@@ -4,6 +4,7 @@ import FleetBadge from '../components/FleetBadge';
 import SessionCard from '../components/SessionCard';
 import Avatar from '../components/Avatar';
 import FotoBijsnijden from '../components/FotoBijsnijden';
+import Voortgang from '../components/Voortgang';
 
 function StatCard({ label, value, sub }) {
   return (
@@ -78,6 +79,8 @@ export default function Profile({ user, onUserUpdate }) {
           </div>
         </div>
       </div>
+
+      <Voortgang stats={stats} fleet={user.fleet} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

@@ -89,22 +89,57 @@ router.get('/:id/stats', async (req, res) => {
     const max_airtime = verified.length ? Math.max(...verified.map(s => parseFloat(s.airtime_s))) : 0;
     const max_distance = verified.length ? Math.max(...verified.map(s => parseFloat(s.distance_m))) : 0;
 
-    // Ranks
-    const allUsersResult = await pool.query('SELECT id FROM users');
-    let rank_overall = 1, rank_in_fleet = 1;
-    await Promise.all(allUsersResult.rows.map(async (u) => {
-      if (u.id === id) return;
-      const uSessions = await pool.query('SELECT points, verified FROM sessions WHERE user_id = $1', [u.id]);
-      const uPoints = calculateTotalPoints(uSessions.rows);
-      if (uPoints > total_points) rank_overall++;
-      const uUser = await pool.query('SELECT fleet FROM users WHERE id = $1', [u.id]);
-      if (uUser.rows[0].fleet === user.fleet && uPoints > total_points) rank_in_fleet++;
-    }));
+    // Standen. Dit deed eerder twee queries per gebruiker; met dertig
+    // deelnemers waren dat zestig queries om één profiel te tonen.
+    const [alleGebruikers, alleSessies] = await Promise.all([
+      pool.query('SELECT id, name, fleet FROM users'),
+      pool.query('SELECT user_id, points, verified FROM sessions'),
+    ]);
+
+    const sessiesPer = new Map(alleGebruikers.rows.map(u => [u.id, []]));
+    for (const s of alleSessies.rows) sessiesPer.get(s.user_id)?.push(s);
+
+    const stand = alleGebruikers.rows
+      .map(u => ({
+        id: u.id,
+        naam: u.name,
+        fleet: u.fleet,
+        punten: calculateTotalPoints(sessiesPer.get(u.id) || []),
+      }))
+      .sort((a, b) => b.punten - a.punten);
+
+    const mijnPlek = stand.findIndex(x => x.id === id);
+    const rank_overall = mijnPlek + 1;
+
+    const inKlasse = stand.filter(x => x.fleet === user.fleet);
+    const rank_in_fleet = inKlasse.findIndex(x => x.id === id) + 1;
+
+    // Wie staat er direct boven je, en hoeveel punten kom je tekort?
+    const boven = mijnPlek > 0 ? stand[mijnPlek - 1] : null;
+    const boven_mij = boven
+      ? {
+          naam: boven.naam,
+          punten: boven.punten,
+          verschil: Math.round((boven.punten - total_points) * 100) / 100,
+        }
+      : null;
+
+    // Wat is de eerstvolgende klasse en welke sprong heb je daarvoor nodig?
+    const KLASSEN = [
+      { naam: 'Silver', min_hoogte: 5 },
+      { naam: 'Gold', min_hoogte: 10 },
+      { naam: 'Platinum', min_hoogte: 15 },
+    ];
+    const volgende_klasse = KLASSEN.find(k => max_height < k.min_hoogte) || null;
 
     const { avatar_v, ...gebruiker } = user;
     res.json({
       user: { ...gebruiker, avatar_url: avatarUrl(req, user.id, avatar_v) },
-      stats: { rank_overall, rank_in_fleet, total_points, sessions_count: verified.length, max_height, avg_height, max_airtime, max_distance },
+      stats: {
+        rank_overall, rank_in_fleet, total_points, sessions_count: verified.length,
+        max_height, avg_height, max_airtime, max_distance,
+        boven_mij, volgende_klasse, rijders_totaal: stand.length,
+      },
       // screenshot_url zat hier ook in maar wordt door geen enkel scherm
       // gebruikt behalve het beheerpaneel — dat scheelde megabytes per profiel.
       recent_sessions: sessions.slice(0, 20).map(s => ({

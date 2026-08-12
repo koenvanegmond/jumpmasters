@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import Avatar from '../components/Avatar';
 import FleetBadge from '../components/FleetBadge';
 import { IconHeight, IconAirtime, IconDistance } from '../components/Icons';
+import { markeerFeedGezien } from '../services/gelezen';
 
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
@@ -182,13 +183,22 @@ function FeedPost({ session, user }) {
   );
 }
 
-export default function Feed({ user }) {
+export default function Feed({ user, onGezien }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.sessionFeed().then(setSessions).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    api.sessionFeed()
+      .then((rijen) => {
+        setSessions(rijen);
+        // Je kijkt er nu naar, dus het bolletje mag weg. We onthouden het
+        // moment van de nieuwste sessie als ijkpunt voor de volgende keer.
+        if (rijen.length) markeerFeedGezien(user?.id, rijen[0].created_at);
+        onGezien?.();
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [user?.id]);
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8">

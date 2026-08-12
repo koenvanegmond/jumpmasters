@@ -39,14 +39,23 @@ const TABS = [
   { to: '/wind',      label: 'Wind',     Icon: IconWind },
 ];
 
-function Tab({ to, label, Icon }) {
+function Tab({ to, label, Icon, badge }) {
   return (
     <NavLink to={to} end={to === '/'}
       className={({ isActive }) =>
-        `flex flex-col items-center justify-center gap-1 py-2 text-[11.5px] font-semibold transition-colors ${
+        `relative flex flex-col items-center justify-center gap-1 py-2 text-[11.5px] font-semibold transition-colors ${
           isActive ? 'text-jm-pinkText' : 'text-jm-muted'
         }`}>
-      <Icon className="w-5 h-5" />
+      <span className="relative">
+        <Icon className="w-5 h-5" />
+        {badge > 0 && (
+          <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full
+                           text-[10px] font-black flex items-center justify-center"
+                style={{ background: 'var(--jm-pink)', color: '#fff' }}>
+            {badge > 9 ? '9+' : badge}
+          </span>
+        )}
+      </span>
       {label}
     </NavLink>
   );
@@ -57,14 +66,14 @@ function Tab({ to, label, Icon }) {
  * grote knop — het is de belangrijkste actie van de hele site en zat
  * voorheen drie tikken diep in het hamburgermenu.
  */
-export default function MobileTabBar() {
+export default function MobileTabBar({ nieuwInFeed = 0 }) {
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/[0.07]
                     bg-jm-card/95 backdrop-blur-md"
          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="grid grid-cols-5 items-end px-1">
         <Tab {...TABS[0]} />
-        <Tab {...TABS[1]} />
+        <Tab {...TABS[1]} badge={nieuwInFeed} />
 
         <NavLink to="/uploaden"
           className="flex flex-col items-center gap-1 text-[11.5px] font-bold text-jm-pinkText"

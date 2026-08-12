@@ -17,6 +17,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { api } from './services/api';
 import { getToken, clearToken, bewaarGebruiker, bewaardeGebruiker } from './services/auth';
+import { aantalNieuw } from './services/gelezen';
 
 function RequireAuth({ user, children }) {
   if (!user) return <Navigate to="/inloggen" replace />;
@@ -26,6 +27,25 @@ function RequireAuth({ user, children }) {
 export default function App() {
   const [user, setUser] = useState(undefined);
   const [toonUitleg, setToonUitleg] = useState(false);
+  const [nieuwInFeed, setNieuwInFeed] = useState(0);
+
+  // Elke twee minuten kijken of er sessies bij zijn gekomen die je nog niet
+  // zag. Dat voedt het bolletje op de Feed-knop.
+  useEffect(() => {
+    if (!user?.id) { setNieuwInFeed(0); return; }
+    let gestopt = false;
+
+    function tel() {
+      api.sessionFeed()
+        .then((sessies) => {
+          if (!gestopt) setNieuwInFeed(aantalNieuw(sessies, user.id, user.id));
+        })
+        .catch(() => {});
+    }
+    tel();
+    const interval = setInterval(tel, 120000);
+    return () => { gestopt = true; clearInterval(interval); };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!getToken()) { setUser(null); return; }
@@ -68,12 +88,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen flex flex-col">
-        <Navbar user={user} onLogout={() => setUser(null)} />
+        <Navbar user={user} nieuwInFeed={nieuwInFeed} onLogout={() => setUser(null)} />
         {/* pb-24 op mobiel zodat de vaste tabbalk niets afdekt */}
         <main className="flex-1 pb-24 md:pb-0">
           <Routes>
             <Route path="/" element={<Home user={user} />} />
-            <Route path="/feed" element={<Feed user={user} />} />
+            <Route path="/feed" element={<Feed user={user} onGezien={() => setNieuwInFeed(0)} />} />
             <Route path="/wind" element={<Wind user={user} />} />
             <Route path="/nieuws" element={<Nieuws user={user} />} />
             <Route path="/ranglijst" element={<Leaderboards />} />
@@ -94,7 +114,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
-        <MobileTabBar />
+        <MobileTabBar nieuwInFeed={nieuwInFeed} />
         {toonUitleg && user && (
           <Onboarding user={user} onKlaar={() => setToonUitleg(false)} />
         )}

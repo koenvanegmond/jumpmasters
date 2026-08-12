@@ -5,7 +5,7 @@ import FleetBadge from './FleetBadge';
 import Avatar from './Avatar';
 import { api } from '../services/api';
 
-export default function Navbar({ user, onLogout }) {
+export default function Navbar({ user, nieuwInFeed = 0, onLogout }) {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -59,7 +59,7 @@ export default function Navbar({ user, onLogout }) {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             <NavLink to="/" className={linkCls} end>Home</NavLink>
-            <NavLink to="/feed" className={linkCls}>Feed</NavLink>
+            <NavLink to="/feed" className={linkCls}>Feed{nieuwInFeed > 0 && <span className="ml-1.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[10px] font-black align-middle" style={{ background: "var(--jm-pink)", color: "#fff" }}>{nieuwInFeed > 9 ? "9+" : nieuwInFeed}</span>}</NavLink>
             <NavLink to="/wind" className={linkCls}>Wind</NavLink>
             <NavLink to="/ranglijst" className={linkCls}>Ranglijst</NavLink>
             <NavLink to="/nieuws" className={linkCls}>Nieuws</NavLink>

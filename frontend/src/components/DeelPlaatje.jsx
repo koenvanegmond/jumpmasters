@@ -59,12 +59,17 @@ export default function DeelPlaatje({ sessie, gebruiker, record, positie }) {
     let gestopt = false;
 
     (async () => {
-      const [foto, avatar, logo] = await Promise.all([
+      const [eigenFoto, standaardFoto, avatar, logo] = await Promise.all([
         sessie.media_type === 'photo' ? laadAfbeelding(sessie.media_url) : null,
+        laadAfbeelding('/deel-achtergrond.jpg'),
         laadAfbeelding(gebruiker.avatar_url),
         laadAfbeelding('/logo-full.png'),
       ]);
       if (gestopt) return;
+
+      // Eigen sessiefoto gaat voor. Anders de clubfoto van Skuytevaert, en
+      // pas als die ontbreekt een verloop.
+      const foto = eigenFoto || standaardFoto;
 
       const doek = doekRef.current;
       doek.width = BREEDTE;
