@@ -27,10 +27,10 @@ function SessionRow({ session, onVerify, onReject, onEdit }) {
             <span>{parseFloat(session.height_m).toFixed(1)}m / {parseFloat(session.airtime_s).toFixed(1)}s / {parseFloat(session.distance_m).toFixed(0)}m</span>
           )}
         </td>
-        <td className="py-3 px-4 text-sm font-black text-jm-pink">{parseFloat(session.points).toFixed(2)}</td>
+        <td className="py-3 px-4 text-sm font-black text-jm-pinkText">{parseFloat(session.points).toFixed(2)}</td>
         <td className="py-3 px-4">
           {session.screenshot_url && (
-            <button onClick={() => setImgOpen(true)} className="text-xs text-jm-pink hover:underline">Bekijken</button>
+            <button onClick={() => setImgOpen(true)} className="text-xs text-jm-pinkText hover:underline">Bekijken</button>
           )}
         </td>
         <td className="py-3 px-4">

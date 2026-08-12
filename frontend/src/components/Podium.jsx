@@ -3,10 +3,12 @@ import Avatar from './Avatar';
 import FleetBadge from './FleetBadge';
 
 // Sokkelhoogtes: de winnaar staat zichtbaar hoger dan de nummers 2 en 3.
+// Zilver en brons zijn opgelicht: #94A3B8 en #CD7F32 haalden maar 2,6 en 3,1
+// contrast op de donkere sokkel, en dat leest voor geen meter in de zon.
 const PLEK = {
-  1: { hoogte: 'h-16', kleur: 'var(--jm-pink)',  volgorde: 'order-2' },
-  2: { hoogte: 'h-11', kleur: '#94A3B8',         volgorde: 'order-1' },
-  3: { hoogte: 'h-8',  kleur: '#CD7F32',         volgorde: 'order-3' },
+  1: { hoogte: 'h-16', kleur: 'var(--jm-pink-text)', volgorde: 'order-2' },
+  2: { hoogte: 'h-11', kleur: '#CBD5E1',             volgorde: 'order-1' },
+  3: { hoogte: 'h-8',  kleur: '#FBBF24',             volgorde: 'order-3' },
 };
 
 function Plek({ entry }) {
@@ -19,13 +21,13 @@ function Plek({ entry }) {
       <Avatar user={{ name: entry.name, avatar_url: entry.avatar_url }} size={eerste ? 'lg' : 'md'} />
 
       <div className="text-center min-w-0 w-full px-0.5">
-        <div className={`font-bold text-white truncate group-hover:text-jm-pink transition-colors ${eerste ? 'text-sm' : 'text-xs'}`}>
+        <div className={`font-bold text-white truncate group-hover:text-jm-pinkText transition-colors ${eerste ? 'text-sm' : 'text-xs'}`}>
           {entry.name}
         </div>
-        <div className={`font-black text-jm-pink tabular-nums ${eerste ? 'text-xl' : 'text-base'}`}>
+        <div className={`font-black text-jm-pinkText tabular-nums ${eerste ? 'text-xl' : 'text-base'}`}>
           {parseFloat(entry.total_points).toFixed(2)}
         </div>
-        <div className="text-[10px] text-jm-muted">
+        <div className="text-[11.5px] text-jm-muted">
           {parseFloat(entry.max_height) > 0 ? `${parseFloat(entry.max_height).toFixed(1)} m` : '—'}
         </div>
       </div>
@@ -61,7 +63,7 @@ export default function Podium({ entries }) {
             <Avatar user={{ name: e.name, avatar_url: e.avatar_url }} size="sm" />
             <span className="flex-1 min-w-0 font-semibold text-white truncate">{e.name}</span>
             <FleetBadge fleet={e.fleet} />
-            <span className="font-black text-jm-pink tabular-nums">
+            <span className="font-black text-jm-pinkText tabular-nums">
               {parseFloat(e.total_points).toFixed(2)}
             </span>
           </Link>

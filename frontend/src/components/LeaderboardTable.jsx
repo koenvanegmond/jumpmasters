@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import FleetBadge from './FleetBadge';
 import Avatar from './Avatar';
 
+// Lichte medaillekleuren: slate-400 en amber-600 waren te donker op de
+// donkerblauwe achtergrond om in fel licht nog te lezen.
 function Medal({ rank }) {
-  if (rank === 1) return <span className="text-yellow-400 font-black">1</span>;
-  if (rank === 2) return <span className="text-slate-400 font-black">2</span>;
-  if (rank === 3) return <span className="text-amber-600 font-black">3</span>;
+  if (rank === 1) return <span className="text-yellow-300 font-black">1</span>;
+  if (rank === 2) return <span className="text-slate-300 font-black">2</span>;
+  if (rank === 3) return <span className="text-amber-400 font-black">3</span>;
   return <span className="text-jm-muted font-semibold text-sm">{rank}</span>;
 }
 
@@ -35,11 +37,11 @@ export default function LeaderboardTable({ entries, showFleet = true }) {
                 <td className="py-3.5 px-4">
                   <Link to={`/rijder/${entry.user_id}`} className="flex items-center gap-3">
                     <Avatar user={{ name: entry.name, avatar_url: entry.avatar_url }} size="sm" />
-                    <span className="font-semibold text-white group-hover:text-jm-pink transition-colors">{entry.name}</span>
+                    <span className="font-semibold text-white group-hover:text-jm-pinkText transition-colors">{entry.name}</span>
                   </Link>
                 </td>
                 {showFleet && <td className="py-3.5 px-4"><FleetBadge fleet={entry.fleet} /></td>}
-                <td className="py-3.5 px-4 text-right font-black text-jm-pink text-base">{entry.total_points.toFixed(2)}</td>
+                <td className="py-3.5 px-4 text-right font-black text-jm-pinkText text-base">{entry.total_points.toFixed(2)}</td>
                 <td className="py-3.5 px-4 text-right text-jm-muted">{entry.sessions_count}</td>
                 <td className="py-3.5 px-4 text-right text-jm-muted">{entry.max_height.toFixed(1)} m</td>
               </tr>
@@ -59,7 +61,7 @@ export default function LeaderboardTable({ entries, showFleet = true }) {
               {showFleet && <div className="mt-1"><FleetBadge fleet={entry.fleet} /></div>}
             </div>
             <div className="text-right">
-              <div className="font-black text-jm-pink">{entry.total_points.toFixed(2)}</div>
+              <div className="font-black text-jm-pinkText">{entry.total_points.toFixed(2)}</div>
               <div className="text-xs text-jm-muted">{entry.max_height.toFixed(1)} m</div>
             </div>
           </Link>

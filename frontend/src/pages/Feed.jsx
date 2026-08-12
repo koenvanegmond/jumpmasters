@@ -75,7 +75,7 @@ function FeedPost({ session, user }) {
           <Avatar user={{ name: session.user_name, avatar_url: session.avatar_url }} size="md" />
         </Link>
         <div className="flex-1 min-w-0">
-          <Link to={`/rijder/${session.user_id}`} className="font-bold text-white hover:text-jm-pink transition-colors text-sm">
+          <Link to={`/rijder/${session.user_id}`} className="font-bold text-white hover:text-jm-pinkText transition-colors text-sm">
             {session.user_name}
           </Link>
           <div className="flex items-center gap-2 mt-0.5">
@@ -83,7 +83,7 @@ function FeedPost({ session, user }) {
             <span className="text-xs text-jm-muted">{timeAgo(session.created_at)}</span>
           </div>
         </div>
-        <span className="text-lg font-black text-jm-pink flex-shrink-0">
+        <span className="text-lg font-black text-jm-pinkText flex-shrink-0">
           {parseFloat(session.points).toFixed(2)} pts
         </span>
       </div>
@@ -100,20 +100,20 @@ function FeedPost({ session, user }) {
       {/* Caption */}
       {session.caption && <p className="px-4 pt-3 text-sm text-white/80 italic">"{session.caption}"</p>}
       {session.tagged_names?.length > 0 && (
-        <p className="px-4 pt-1 text-xs text-jm-pink">🏷 Uitdaging aan: {session.tagged_names.join(', ')}</p>
+        <p className="px-4 pt-1 text-xs text-jm-pinkText">🏷 Uitdaging aan: {session.tagged_names.join(', ')}</p>
       )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 px-4 pt-3">
         {[
-          { icon: <IconHeight className="w-4 h-4" />, value: `${parseFloat(session.height_m).toFixed(1)}m`, label: 'Hoogte', color: 'text-jm-pink' },
+          { icon: <IconHeight className="w-4 h-4" />, value: `${parseFloat(session.height_m).toFixed(1)}m`, label: 'Hoogte', color: 'text-jm-pinkText' },
           { icon: <IconAirtime className="w-4 h-4" />, value: `${parseFloat(session.airtime_s).toFixed(1)}s`, label: 'Airtime', color: 'text-sky-400' },
           { icon: <IconDistance className="w-4 h-4" />, value: `${parseFloat(session.distance_m).toFixed(0)}m`, label: 'Afstand', color: 'text-violet-400' },
         ].map(({ icon, value, label, color }) => (
           <div key={label} className="rounded-xl p-2.5 text-center" style={{ backgroundColor: 'var(--jm-base)' }}>
             <div className={`flex justify-center mb-0.5 ${color}`}>{icon}</div>
             <div className={`text-sm font-black ${color}`}>{value}</div>
-            <div className="text-[10px] text-jm-muted">{label}</div>
+            <div className="text-[11.5px] text-jm-muted">{label}</div>
           </div>
         ))}
       </div>
@@ -122,7 +122,7 @@ function FeedPost({ session, user }) {
       <div className="flex items-center gap-4 px-4 py-3 mt-1 border-t border-white/[0.06]">
         <button onClick={handleLike}
           className="flex items-center gap-1.5 text-sm font-semibold transition-colors"
-          style={{ color: likedByMe ? '#E8196A' : '#8BA3C7', cursor: user ? 'pointer' : 'default' }}>
+          style={{ color: likedByMe ? 'var(--jm-pink-text)' : 'var(--jm-muted)', cursor: user ? 'pointer' : 'default' }}>
           <svg className="w-5 h-5" fill={likedByMe ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
           </svg>
@@ -148,7 +148,7 @@ function FeedPost({ session, user }) {
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-bold text-white">{c.name}</span>
                   {user?.id === c.user_id && (
-                    <button onClick={() => handleDeleteComment(c.id)} className="text-[10px] text-red-400 hover:text-red-300">✕</button>
+                    <button onClick={() => handleDeleteComment(c.id)} className="text-[11.5px] text-red-400 hover:text-red-300">✕</button>
                   )}
                 </div>
                 <p className="text-sm text-white/80 mt-0.5">{c.content}</p>
@@ -166,7 +166,7 @@ function FeedPost({ session, user }) {
             </form>
           ) : (
             <p className="text-xs text-jm-muted">
-              <Link to="/inloggen" className="text-jm-pink hover:underline">Log in</Link> om te reageren.
+              <Link to="/inloggen" className="text-jm-pinkText hover:underline">Log in</Link> om te reageren.
             </p>
           )}
         </div>

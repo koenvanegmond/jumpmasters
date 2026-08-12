@@ -63,7 +63,7 @@ export default function PublicProfile() {
         )}
       </div>
 
-      <Link to="/ranglijst" className="block text-center text-sm text-jm-pink font-semibold hover:underline">
+      <Link to="/ranglijst" className="block text-center text-sm text-jm-pinkText font-semibold hover:underline">
         ← Terug naar ranglijst
       </Link>
     </div>

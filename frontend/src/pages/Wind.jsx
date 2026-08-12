@@ -20,12 +20,12 @@ function WindForecast() {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-[11px] text-jm-muted mb-1.5">Windfinder · Superforecast</p>
+        <p className="text-xs text-jm-muted mb-1.5">Windfinder · Superforecast</p>
         <iframe src={wfUrl} title="Windfinder" width="100%" height="360"
           frameBorder="0" style={{ display: 'block', borderRadius: '10px', background: '#0F1E35' }} />
       </div>
       <div>
-        <p className="text-[11px] text-jm-muted mb-1.5">Windy · ECMWF model</p>
+        <p className="text-xs text-jm-muted mb-1.5">Windy · ECMWF model</p>
         <iframe src={windyUrl} title="Windy" width="100%" height="360"
           frameBorder="0" style={{ display: 'block', borderRadius: '10px' }} />
       </div>
@@ -85,7 +85,7 @@ export default function Wind({ user }) {
           <p className="text-sm text-jm-muted capitalize">{today} · Skuytevaert</p>
         </div>
         <a href="https://www.windfinder.com/weatherforecast/noordwijk" target="_blank" rel="noopener noreferrer"
-          className="text-xs text-jm-pink hover:underline">Windfinder →</a>
+          className="text-xs text-jm-pinkText hover:underline">Windfinder →</a>
       </div>
 
       {/* Two-column layout */}
@@ -132,7 +132,7 @@ export default function Wind({ user }) {
             </div>
           ) : (
             <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(232,25,106,0.06)', border: '1px solid rgba(232,25,106,0.15)' }}>
-              <Link to="/inloggen" className="text-jm-pink font-bold hover:underline">Log in</Link>
+              <Link to="/inloggen" className="text-jm-pinkText font-bold hover:underline">Log in</Link>
               <span className="text-jm-muted"> om te laten weten of je gaat.</span>
             </div>
           )}

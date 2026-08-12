@@ -38,7 +38,7 @@ function TagInput({ tagged, onAdd, onRemove }) {
       {tagged.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
           {tagged.map(u => (
-            <span key={u.id} className="flex items-center gap-1 bg-jm-pink/10 text-jm-pink text-xs px-2.5 py-1 rounded-full border border-jm-pink/30">
+            <span key={u.id} className="flex items-center gap-1 bg-jm-pink/10 text-jm-pinkText text-xs px-2.5 py-1 rounded-full border border-jm-pink/30">
               {u.name}
               <button type="button" onClick={() => onRemove(u.id)} className="hover:text-red-400 transition-colors ml-0.5">✕</button>
             </span>
@@ -225,7 +225,7 @@ export default function Upload() {
 
           {points !== null && (
             <div className="bg-jm-pink/5 border border-jm-pink/20 rounded-xl p-5 text-center">
-              <div className="text-3xl font-black text-jm-pink">{points.toFixed(2)}</div>
+              <div className="text-3xl font-black text-jm-pinkText">{points.toFixed(2)}</div>
               <div className="text-sm text-jm-muted mt-1">Punten voor deze sessie</div>
             </div>
           )}
@@ -260,7 +260,7 @@ export default function Upload() {
               </div>
             ) : (
               <button type="button" onClick={() => mediaRef.current.click()}
-                className="w-full border-2 border-dashed border-white/10 hover:border-jm-pink/40 rounded-xl py-6 text-center text-jm-muted hover:text-jm-pink transition-colors text-sm">
+                className="w-full border-2 border-dashed border-white/10 hover:border-jm-pink/40 rounded-xl py-6 text-center text-jm-muted hover:text-jm-pinkText transition-colors text-sm">
                 <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
                 </svg>

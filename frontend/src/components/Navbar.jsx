@@ -51,7 +51,7 @@ export default function Navbar({ user, onLogout }) {
                 document.getElementById('jm-logo-fallback').style.display = 'flex';
               }} />
             <span id="jm-logo-fallback"
-              className="hidden items-center font-black text-xl tracking-wide text-jm-pink">
+              className="hidden items-center font-black text-xl tracking-wide text-jm-pinkText">
               JUMPMASTERS
             </span>
           </Link>
@@ -79,7 +79,7 @@ export default function Navbar({ user, onLogout }) {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                     </svg>
                     {unread > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center"
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[11.5px] font-black flex items-center justify-center"
                         style={{ background: 'var(--jm-pink)', color: 'white' }}>
                         {unread > 9 ? '9+' : unread}
                       </span>
@@ -105,7 +105,7 @@ export default function Navbar({ user, onLogout }) {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs text-white/90 leading-snug">{n.message}</p>
-                              <p className="text-[10px] text-jm-muted mt-0.5">
+                              <p className="text-[11.5px] text-jm-muted mt-0.5">
                                 {new Date(n.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
@@ -159,14 +159,14 @@ export default function Navbar({ user, onLogout }) {
               <NavLink to="/profiel" className="block text-sm font-medium text-jm-muted hover:text-white" onClick={() => setOpen(false)}>Mijn profiel</NavLink>
               <button onClick={() => { setOpen(false); openNotifs(); }}
                 className="flex items-center gap-2 text-sm font-medium text-jm-muted hover:text-white">
-                Meldingen {unread > 0 && <span className="rounded-full px-1.5 py-0.5 text-[10px] font-black" style={{ background: 'var(--jm-pink)', color: 'white' }}>{unread}</span>}
+                Meldingen {unread > 0 && <span className="rounded-full px-1.5 py-0.5 text-[11.5px] font-black" style={{ background: 'var(--jm-pink)', color: 'white' }}>{unread}</span>}
               </button>
               <button onClick={handleLogout} className="block text-sm text-red-400">Uitloggen</button>
             </>
           ) : (
             <>
               <Link to="/inloggen" className="block text-sm text-jm-muted" onClick={() => setOpen(false)}>Inloggen</Link>
-              <Link to="/registreren" className="block text-sm font-semibold text-jm-pink" onClick={() => setOpen(false)}>Registreren</Link>
+              <Link to="/registreren" className="block text-sm font-semibold text-jm-pinkText" onClick={() => setOpen(false)}>Registreren</Link>
             </>
           )}
         </div>

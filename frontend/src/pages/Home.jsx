@@ -10,14 +10,14 @@ import { IconRiders, IconSessions, IconHeight, IconUpload, IconAirtime, IconDist
 function StatCard({ icon, label, value, sub }) {
   return (
     <div className="card p-5 flex items-center gap-4">
-      <div className="w-11 h-11 rounded-xl flex items-center justify-center text-jm-pink flex-shrink-0"
+      <div className="w-11 h-11 rounded-xl flex items-center justify-center text-jm-pinkText flex-shrink-0"
            style={{ background: 'rgba(232,25,106,0.1)', border: '1px solid rgba(232,25,106,0.2)' }}>
         {icon}
       </div>
       <div>
         <div className="text-2xl font-black text-white">{value ?? '—'}</div>
         <div className="text-xs text-jm-muted mt-0.5">{label}</div>
-        {sub && <div className="text-[10px] text-jm-muted/60 mt-0.5">{sub}</div>}
+        {sub && <div className="text-[11.5px] text-jm-muted/60 mt-0.5">{sub}</div>}
       </div>
     </div>
   );
@@ -98,7 +98,7 @@ export default function Home({ user }) {
         </div>
         {!user && (
           <Link to="/registreren"
-            className="mt-3 pt-3 border-t border-white/[0.07] flex items-center justify-between text-sm font-bold text-jm-pink">
+            className="mt-3 pt-3 border-t border-white/[0.07] flex items-center justify-between text-sm font-bold text-jm-pinkText">
             Doe mee met de competitie
             <span className="text-lg">→</span>
           </Link>
@@ -136,19 +136,19 @@ export default function Home({ user }) {
                 </span>
                 <Avatar user={{ name: entry.name, avatar_url: entry.avatar_url }} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-white group-hover:text-jm-pink transition-colors truncate">
+                  <div className="font-semibold text-white group-hover:text-jm-pinkText transition-colors truncate">
                     {entry.name}
                   </div>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    <span className="text-[11px] text-jm-pink flex items-center gap-1">
+                    <span className="text-xs text-jm-pinkText flex items-center gap-1">
                       <IconHeight className="w-3 h-3" />
                       {entry.max_height > 0 ? `${parseFloat(entry.max_height).toFixed(1)}m` : '—'}
                     </span>
-                    <span className="text-[11px] text-sky-400 flex items-center gap-1">
+                    <span className="text-xs text-sky-400 flex items-center gap-1">
                       <IconAirtime className="w-3 h-3" />
                       {entry.max_airtime > 0 ? `${parseFloat(entry.max_airtime).toFixed(1)}s` : '—'}
                     </span>
-                    <span className="text-[11px] text-violet-400 flex items-center gap-1">
+                    <span className="text-xs text-violet-400 flex items-center gap-1">
                       <IconDistance className="w-3 h-3" />
                       {entry.max_distance > 0 ? `${parseFloat(entry.max_distance).toFixed(0)}m` : '—'}
                     </span>
@@ -157,8 +157,8 @@ export default function Home({ user }) {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <FleetBadge fleet={entry.fleet} />
                   <div className="text-right">
-                    <div className="font-black text-jm-pink text-base leading-tight">{parseFloat(entry.total_points).toFixed(2)}</div>
-                    <div className="text-[10px] text-jm-muted">punten</div>
+                    <div className="font-black text-jm-pinkText text-base leading-tight">{parseFloat(entry.total_points).toFixed(2)}</div>
+                    <div className="text-[11.5px] text-jm-muted">punten</div>
                   </div>
                 </div>
               </Link>
@@ -167,7 +167,7 @@ export default function Home({ user }) {
           </>
         )}
         <div className="mt-4 pt-4 border-t border-white/[0.07] flex items-center justify-between">
-          <Link to="/ranglijst" className="text-sm text-jm-pink font-semibold hover:underline">
+          <Link to="/ranglijst" className="text-sm text-jm-pinkText font-semibold hover:underline">
             Volledige ranglijst →
           </Link>
           <Link to="/feed" className="text-sm text-jm-muted hover:text-white transition-colors">

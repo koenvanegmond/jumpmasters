@@ -43,8 +43,8 @@ function Tab({ to, label, Icon }) {
   return (
     <NavLink to={to} end={to === '/'}
       className={({ isActive }) =>
-        `flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-semibold transition-colors ${
-          isActive ? 'text-jm-pink' : 'text-jm-muted'
+        `flex flex-col items-center justify-center gap-1 py-2 text-[11.5px] font-semibold transition-colors ${
+          isActive ? 'text-jm-pinkText' : 'text-jm-muted'
         }`}>
       <Icon className="w-5 h-5" />
       {label}
@@ -67,7 +67,7 @@ export default function MobileTabBar() {
         <Tab {...TABS[1]} />
 
         <NavLink to="/uploaden"
-          className="flex flex-col items-center gap-1 text-[10px] font-bold text-jm-pink"
+          className="flex flex-col items-center gap-1 text-[11.5px] font-bold text-jm-pinkText"
           aria-label="Sessie uploaden">
           <span className="w-12 h-12 -mt-5 rounded-full flex items-center justify-center text-white
                            shadow-lg shadow-jm-pink/30"

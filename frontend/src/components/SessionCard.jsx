@@ -28,7 +28,7 @@ export default function SessionCard({ session }) {
 
         {session.caption && <p className="text-sm text-jm-muted mb-3 italic">"{session.caption}"</p>}
         {session.tagged_names?.length > 0 && (
-          <p className="text-xs text-jm-pink mb-3">
+          <p className="text-xs text-jm-pinkText mb-3">
             <svg className="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
@@ -39,21 +39,21 @@ export default function SessionCard({ session }) {
 
         <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: <IconHeight className="w-4 h-4" />, value: height, label: 'Hoogte', unit: 'm', color: 'text-jm-pink' },
+            { icon: <IconHeight className="w-4 h-4" />, value: height, label: 'Hoogte', unit: 'm', color: 'text-jm-pinkText' },
             { icon: <IconAirtime className="w-4 h-4" />, value: airtime, label: 'Airtime', unit: 's', color: 'text-sky-400' },
             { icon: <IconDistance className="w-4 h-4" />, value: distance, label: 'Afstand', unit: 'm', color: 'text-violet-400' },
           ].map(({ icon, value, label, unit, color }) => (
             <div key={label} className="bg-jm-base rounded-xl p-3 text-center">
               <div className={`flex justify-center mb-1 ${color}`}>{icon}</div>
               <div className={`text-lg font-black ${color}`}>{value}</div>
-              <div className="text-[10px] text-jm-muted mt-0.5">{label} ({unit})</div>
+              <div className="text-[11.5px] text-jm-muted mt-0.5">{label} ({unit})</div>
             </div>
           ))}
         </div>
 
         <div className="mt-3 pt-3 border-t border-white/[0.07] flex items-center justify-between">
           <span className="text-xs text-jm-muted">Score</span>
-          <span className="text-base font-black text-jm-pink">{parseFloat(session.points).toFixed(2)} pts</span>
+          <span className="text-base font-black text-jm-pinkText">{parseFloat(session.points).toFixed(2)} pts</span>
         </div>
       </div>
     </div>

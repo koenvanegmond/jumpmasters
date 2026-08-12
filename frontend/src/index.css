@@ -6,9 +6,18 @@
   :root {
     --jm-base: #0A1628;
     --jm-card: #0F1E35;
+
+    /* Twee rozen met een taakverdeling. Het merkroze is bedoeld als vlak —
+       als knop, als vulling — met witte tekst erop. Als tékstkleur op de
+       donkere achtergrond haalt het maar 3,8 contrast, en dat is te weinig:
+       vanaf 4,5 blijft tekst leesbaar in fel licht. Vandaar een lichtere
+       variant voor alles wat letter is. */
     --jm-pink: #E8196A;
     --jm-pink-light: #FF4D8D;
-    --jm-muted: #8BA3C7;
+    --jm-pink-text: #FF4D8D;   /* 5,3 contrast op de kaartachtergrond */
+
+    /* Was #8BA3C7 (6,5). Nu 8,8 — scheelt merkbaar op een zonnig strand. */
+    --jm-muted: #A8BEDC;
   }
 
   body {

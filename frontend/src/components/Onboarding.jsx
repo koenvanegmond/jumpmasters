@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { INTRO_KORT, SURFR_VERMELDING } from '../content';
 
 // Per account onthouden, niet per browser: log je op dezelfde telefoon in met
 // een ander account, dan hoort die de uitleg ook één keer te krijgen.
@@ -21,49 +20,68 @@ function markeerAlsGezien(userId) {
   } catch { /* niets aan te doen */ }
 }
 
+// Korte regels in plaats van lopende tekst: dit is een introscherm dat je in
+// tien seconden op het strand leest, niet een pagina om te bestuderen.
 const STAPPEN = [
   {
     titel: 'Welkom bij Jump Masters',
-    tekst: INTRO_KORT,
-    voet: SURFR_VERMELDING,
+    punten: [
+      'De kitesurfcompetitie van Skuytevaert',
+      'Fun, progressie en een gezonde strijd op het water',
+      'Je springt wanneer het jou uitkomt',
+    ],
+    voet: 'Je scores komen uit de metingen van de Surfr app.',
     afbeelding: '/logo-full.png',
-    beeldKlasse: 'h-32 object-contain',
+    beeldKlasse: 'h-28 object-contain',
   },
   {
     titel: 'Zo verdien je punten',
-    tekst: 'Elke sessie levert punten op. Hoogte telt het zwaarst, daarna je vliegtijd, daarna de afstand. Je vijf beste sessies vormen samen je seizoensscore — mindere sessies tellen dus niet tegen je.',
+    punten: [
+      'Hoogte telt het zwaarst',
+      'Daarna je vliegtijd, daarna de afstand',
+      'Je 5 beste sessies vormen je seizoensscore',
+      'Mindere sessies tellen dus niet tegen je',
+    ],
     formule: true,
-    afbeelding: null,
   },
   {
     titel: 'Deel je sessie in Surfr',
-    tekst: 'Open je sessie in de Surfr app en tik onderaan op het deel-icoontje, naast het hartje. Kies daarna "Save Image" om de officiële samenvatting in je galerij te zetten.',
+    punten: [
+      'Open je sessie in de Surfr app',
+      'Tik onderaan op het deel-icoontje, naast het hartje',
+      'Kies "Save Image"',
+    ],
     afbeelding: '/stap2.PNG',
-    beeldKlasse: 'h-52 object-contain rounded-xl border border-white/10',
+    beeldKlasse: 'h-44 object-contain rounded-xl border border-white/10',
   },
   {
     titel: 'Upload hem hier',
-    tekst: 'Kies die foto op de uploadpagina. Wij lezen je hoogte, vliegtijd en afstand er automatisch uit — jij hoeft niets in te tikken. Let op: een screenshot van je hele telefoonscherm werkt niet, het moet de deel-afbeelding uit Surfr zijn.',
+    punten: [
+      'Kies die foto bij Uploaden',
+      'Wij lezen hoogte, vliegtijd en afstand er zelf uit',
+      'Je hoeft niets in te tikken',
+    ],
+    waarschuwing: 'Geen screenshot van je hele telefoonscherm — het moet de deel-afbeelding uit Surfr zijn.',
     afbeelding: '/stap4.PNG',
-    beeldKlasse: 'h-52 object-contain rounded-xl border border-white/10',
+    beeldKlasse: 'h-44 object-contain rounded-xl border border-white/10',
   },
 ];
 
 function Formule() {
   return (
-    <div className="rounded-2xl p-4 border border-white/10 space-y-2"
+    <div className="rounded-2xl p-4 border border-white/10 space-y-2.5"
          style={{ background: 'rgba(232,25,106,0.06)' }}>
       {[
-        { label: 'Hoogte', factor: '2,5×', kleur: '#E8196A', balk: 'w-full' },
-        { label: 'Vliegtijd', factor: '1,5×', kleur: '#0EA5E9', balk: 'w-3/5' },
-        { label: 'Afstand', factor: '0,25×', kleur: '#8B5CF6', balk: 'w-1/4' },
+        { label: 'Hoogte', factor: '2,5×', kleur: '#FF4D8D', balk: 'w-full' },
+        { label: 'Vliegtijd', factor: '1,5×', kleur: '#38BDF8', balk: 'w-3/5' },
+        { label: 'Afstand', factor: '0,25×', kleur: '#A78BFA', balk: 'w-1/4' },
       ].map(({ label, factor, kleur, balk }) => (
         <div key={label} className="flex items-center gap-3">
-          <div className="w-16 text-xs font-semibold text-white">{label}</div>
-          <div className="flex-1 rounded-full h-1.5 bg-white/10">
-            <div className={`${balk} h-1.5 rounded-full`} style={{ background: kleur }} />
+          <div className="w-20 text-sm font-semibold text-white">{label}</div>
+          <div className="flex-1 rounded-full h-2 bg-white/10">
+            <div className={`${balk} h-2 rounded-full`} style={{ background: kleur }} />
           </div>
-          <div className="w-10 text-right text-xs font-black" style={{ color: kleur }}>{factor}</div>
+          <div className="w-12 text-right text-sm font-black" style={{ color: kleur }}>{factor}</div>
         </div>
       ))}
     </div>
@@ -76,30 +94,30 @@ export default function Onboarding({ user, onKlaar }) {
   const huidige = STAPPEN[stap];
   const laatste = stap === STAPPEN.length - 1;
 
-  function sluit(naarUploaden) {
+  function sluit(naarUitleg) {
     markeerAlsGezien(user.id);
     onKlaar();
-    if (naarUploaden) navigate('/uploaden');
+    navigate(naarUitleg ? '/hoe-het-werkt' : '/');
   }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-         style={{ background: 'rgba(10,22,40,0.92)', backdropFilter: 'blur(6px)' }}
+         style={{ background: 'rgba(10,22,40,0.94)', backdropFilter: 'blur(6px)' }}
          role="dialog" aria-modal="true" aria-label="Uitleg Jump Masters">
-      <div className="card w-full max-w-md p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+      <div className="card w-full max-w-md p-6 flex flex-col gap-5 max-h-[92vh] overflow-y-auto">
 
         <div className="flex items-center justify-between">
           <div className="flex gap-1.5">
             {STAPPEN.map((_, i) => (
-              <span key={i} className="h-1 rounded-full transition-all"
+              <span key={i} className="h-1.5 rounded-full transition-all"
                     style={{
-                      width: i === stap ? 22 : 8,
-                      background: i <= stap ? 'var(--jm-pink)' : 'rgba(255,255,255,0.18)',
+                      width: i === stap ? 24 : 9,
+                      background: i <= stap ? 'var(--jm-pink-text)' : 'rgba(255,255,255,0.22)',
                     }} />
             ))}
           </div>
           <button type="button" onClick={() => sluit(false)}
-                  className="text-xs text-jm-muted hover:text-white transition-colors">
+                  className="text-sm font-medium text-jm-muted hover:text-white transition-colors">
             Overslaan
           </button>
         </div>
@@ -109,30 +127,51 @@ export default function Onboarding({ user, onKlaar }) {
                onError={(e) => { e.target.style.display = 'none'; }} />
         )}
 
-        <div className="space-y-2">
-          <h2 className="text-xl font-black text-white">{huidige.titel}</h2>
-          <p className="text-sm text-jm-muted leading-relaxed">{huidige.tekst}</p>
-        </div>
+        <h2 className="text-2xl font-black text-white leading-tight">{huidige.titel}</h2>
+
+        <ul className="space-y-2.5">
+          {huidige.punten.map((punt) => (
+            <li key={punt} className="flex gap-3 text-base text-white/90 leading-snug">
+              <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: 'var(--jm-pink-text)' }} />
+              {punt}
+            </li>
+          ))}
+        </ul>
 
         {huidige.formule && <Formule />}
 
         {huidige.voet && (
-          <p className="text-xs text-jm-pink/90 border-l-2 border-jm-pink/40 pl-3">
+          <p className="text-sm text-jm-pinkText border-l-2 border-jm-pinkText/40 pl-3 leading-snug">
             {huidige.voet}
           </p>
         )}
 
-        <div className="flex items-center gap-3 mt-auto">
+        {huidige.waarschuwing && (
+          <p className="text-sm text-yellow-200 leading-snug rounded-xl p-3 border"
+             style={{ background: 'rgba(251,191,36,0.09)', borderColor: 'rgba(251,191,36,0.3)' }}>
+            {huidige.waarschuwing}
+          </p>
+        )}
+
+        {laatste && (
+          <button type="button" onClick={() => sluit(true)}
+                  className="text-sm font-semibold text-jm-pinkText text-left hover:underline">
+            Meer weten? Kijk bij Hoe het werkt →
+          </button>
+        )}
+
+        <div className="flex items-center gap-3 mt-auto pt-1">
           {stap > 0 && (
             <button type="button" onClick={() => setStap(s => s - 1)}
-                    className="btn-secondary text-sm py-2.5 px-4">
+                    className="btn-secondary text-base py-3 px-5">
               Terug
             </button>
           )}
           <button type="button"
-                  onClick={() => (laatste ? sluit(true) : setStap(s => s + 1))}
-                  className="btn-primary flex-1 justify-center text-sm py-2.5">
-            {laatste ? 'Upload je eerste sessie' : 'Volgende'}
+                  onClick={() => (laatste ? sluit(false) : setStap(s => s + 1))}
+                  className="btn-primary flex-1 justify-center text-base py-3">
+            {laatste ? 'Aan de slag' : 'Volgende'}
           </button>
         </div>
       </div>

@@ -11,7 +11,7 @@ export default function HoeHetWerkt() {
         <p className="text-jm-muted text-base max-w-xl mx-auto leading-relaxed">
           {INTRO_LANG}
         </p>
-        <p className="text-sm text-jm-pink/90 max-w-xl mx-auto">
+        <p className="text-sm text-jm-pinkText/90 max-w-xl mx-auto">
           {SURFR_VERMELDING}
         </p>
       </div>
@@ -131,7 +131,7 @@ export default function HoeHetWerkt() {
           <span className="text-xl flex-shrink-0">💡</span>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--jm-muted)' }}>
             <span className="text-white font-semibold">Tip:</span> Heb je iemands record verbroken?
-            Gebruik de <span className="text-jm-pink font-semibold">@tag</span> functie tijdens het posten om diegene direct uit te dagen!
+            Gebruik de <span className="text-jm-pinkText font-semibold">@tag</span> functie tijdens het posten om diegene direct uit te dagen!
           </p>
         </div>
       </section>

@@ -45,7 +45,7 @@ export default function Login({ onLogin }) {
         </form>
         <p className="text-center text-sm text-jm-muted mt-5">
           Nog geen account?{' '}
-          <Link to="/registreren" className="text-jm-pink font-semibold hover:underline">Registreren</Link>
+          <Link to="/registreren" className="text-jm-pinkText font-semibold hover:underline">Registreren</Link>
         </p>
       </div>
     </div>

@@ -59,7 +59,7 @@ export default function Signup({ onLogin }) {
         </form>
         <p className="text-center text-sm text-jm-muted mt-5">
           Al een account?{' '}
-          <Link to="/inloggen" className="text-jm-pink font-semibold hover:underline">Inloggen</Link>
+          <Link to="/inloggen" className="text-jm-pinkText font-semibold hover:underline">Inloggen</Link>
         </p>
       </div>
     </div>
