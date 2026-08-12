@@ -5,6 +5,7 @@ import FleetBadge from '../components/FleetBadge';
 import Avatar from '../components/Avatar';
 import Podium from '../components/Podium';
 import FeestweekBlok from '../components/FeestweekBlok';
+import MeldingenBanner from '../components/MeldingenBanner';
 import { INTRO_KORT } from '../content';
 import { IconRiders, IconSessions, IconHeight, IconUpload, IconAirtime, IconDistance } from '../components/Icons';
 
@@ -113,6 +114,8 @@ export default function Home({ user }) {
           </Link>
         )}
       </div>
+
+      <MeldingenBanner user={user} className="order-1 mb-4" />
 
       {/* Feestweek staat bovenaan zolang hij loopt of eraan komt. */}
       {feestweek && (

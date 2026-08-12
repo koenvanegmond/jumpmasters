@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MeldingenKnop from './MeldingenKnop';
 
 // Per account onthouden, niet per browser: log je op dezelfde telefoon in met
 // een ander account, dan hoort die de uitleg ook één keer te krijgen.
@@ -64,6 +65,15 @@ const STAPPEN = [
     waarschuwing: 'Geen screenshot van je hele telefoonscherm. Het moet de deel-afbeelding uit Surfr zijn.',
     afbeelding: '/stap4.PNG',
     beeldKlasse: 'h-44 object-contain rounded-xl border border-white/10',
+  },
+  {
+    titel: 'Blijf op de hoogte',
+    punten: [
+      'Iemand tagt je in een sessie',
+      'Iemand haalt je in op de ranglijst',
+      'Er staat een nieuwe sessie in de feed',
+    ],
+    meldingen: true,
   },
 ];
 
@@ -141,6 +151,8 @@ export default function Onboarding({ user, onKlaar }) {
 
         {huidige.formule && <Formule />}
 
+        {huidige.meldingen && <MeldingenKnop variant="compact" />}
+
         {huidige.voet && (
           <p className="text-sm text-jm-pinkText border-l-2 border-jm-pinkText/40 pl-3 leading-snug">
             {huidige.voet}
@@ -171,7 +183,7 @@ export default function Onboarding({ user, onKlaar }) {
           <button type="button"
                   onClick={() => (laatste ? sluit(false) : setStap(s => s + 1))}
                   className="btn-primary flex-1 justify-center text-base py-3">
-            {laatste ? 'Aan de slag' : 'Volgende'}
+            {laatste ? 'Klaar, aan de slag' : 'Volgende'}
           </button>
         </div>
       </div>
