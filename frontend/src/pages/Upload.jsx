@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import UploadZone from '../components/UploadZone';
+import DeelPlaatje from '../components/DeelPlaatje';
 import { calculateSessionPoints } from '../utils/scoring';
 
 function Field({ label, value, onChange, unit, vast }) {
@@ -67,7 +68,7 @@ function today() {
   return new Date().toISOString().split('T')[0];
 }
 
-export default function Upload() {
+export default function Upload({ user }) {
   const navigate = useNavigate();
   const [step, setStep] = useState('idle');
   const [preview, setPreview] = useState(null);
@@ -80,6 +81,7 @@ export default function Upload() {
   const [mediaPreview, setMediaPreview] = useState(null);
   const [showExtras, setShowExtras] = useState(false);
   const [scanMislukt, setScanMislukt] = useState(false);
+  const [opgeslagen, setOpgeslagen] = useState(null);
   const [error, setError] = useState('');
   const mediaRef = useRef();
 
@@ -146,8 +148,9 @@ export default function Upload() {
     if (mediaFile) fd.append('media', mediaFile);
     try {
       const endpoint = scanToken ? api.confirmSession : api.manualSession;
-      await endpoint(fd);
-      navigate('/profiel');
+      const { session, record } = await endpoint(fd);
+      setOpgeslagen({ session, record });
+      setStep('klaar');
     } catch (err) {
       setError(err.message);
       setStep('confirm');
@@ -160,14 +163,74 @@ export default function Upload() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-black text-white mb-1">Sessie uploaden</h1>
-      <p className="text-jm-muted text-sm mb-6">
-        {step === 'idle'
-          ? 'Kies je Surfr-foto, dan lezen we de gegevens automatisch uit. Lukt dat niet, vul je het zelf in.'
-          : 'Controleer de gegevens en pas aan als er een foutje in zit.'}
-      </p>
+      {step !== 'klaar' && (
+        <>
+          <h1 className="text-2xl font-black text-white mb-1">Sessie uploaden</h1>
+          <p className="text-jm-muted text-sm mb-6">
+            {step === 'idle'
+              ? 'Kies je Surfr-foto, dan lezen we de gegevens automatisch uit. Lukt dat niet, vul je het zelf in.'
+              : 'Controleer de gegevens en pas aan als er een foutje in zit.'}
+          </p>
+        </>
+      )}
 
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>}
+
+      {step === 'klaar' && opgeslagen && (
+        <div className="space-y-5">
+          {opgeslagen.record?.hoogte || opgeslagen.record?.punten ? (
+            <div className="rounded-2xl p-5 text-center"
+                 style={{ background: 'linear-gradient(135deg,#E8196A,#FF4D8D)' }}>
+              <div className="text-4xl mb-1">🏆</div>
+              <p className="text-xl font-black text-white">
+                {opgeslagen.record.eerste_sessie
+                  ? 'Je eerste sessie staat erop!'
+                  : opgeslagen.record.hoogte
+                    ? 'Hoogste sprong ooit!'
+                    : 'Beste score ooit!'}
+              </p>
+              {opgeslagen.record.hoogte && !opgeslagen.record.eerste_sessie && (
+                <p className="text-sm text-white/85 mt-1">
+                  {parseFloat(opgeslagen.session.height_m).toFixed(1)} m, je oude record was{' '}
+                  {opgeslagen.record.vorige_hoogte.toFixed(1)} m.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-2xl p-5 text-center bg-emerald-500/10 border border-emerald-500/25">
+              <p className="text-lg font-black text-emerald-300">Sessie opgeslagen</p>
+              {!opgeslagen.session.verified && (
+                <p className="text-sm text-emerald-200/80 mt-1">
+                  De beheerder controleert hem voordat hij meetelt.
+                </p>
+              )}
+            </div>
+          )}
+
+          {user && (
+            <DeelPlaatje
+              sessie={{
+                ...opgeslagen.session,
+                media_url: mediaPreview,
+                media_type: mediaFile?.type.startsWith('video') ? 'video' : (mediaFile ? 'photo' : null),
+              }}
+              gebruiker={user}
+              record={opgeslagen.record}
+            />
+          )}
+
+          <div className="flex gap-3">
+            <button type="button" onClick={() => navigate('/profiel')}
+                    className="btn-secondary flex-1 justify-center text-sm py-3">
+              Mijn profiel
+            </button>
+            <button type="button" onClick={() => navigate('/feed')}
+                    className="btn-secondary flex-1 justify-center text-sm py-3">
+              Naar de feed
+            </button>
+          </div>
+        </div>
+      )}
 
       {step === 'idle' && (
         <>

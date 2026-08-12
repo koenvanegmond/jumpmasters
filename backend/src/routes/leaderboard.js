@@ -59,10 +59,9 @@ router.get('/overall', async (req, res) => {
 });
 
 // GET /api/leaderboard/daily — alleen de sessies van vandaag
-// Puntentelling volgt exact dezelfde regel als het seizoensklassement: je
-// beste vijf sessies tellen mee, de rest niet. Daarom draait dit door
-// calculateTotalPoints heen en niet door een SUM in SQL — zo kan de regel
-// niet uiteenlopen tussen de twee klassementen.
+// Anders dan de andere klassementen wordt hier niets opgeteld. Het gaat om je
+// hoogst scorende losse sessie van die dag: wie scoorde vandaag de meeste
+// punten met één sessie. Vaak springen levert dus geen voorsprong op.
 router.get('/daily', async (req, res) => {
   try {
     // Datum bepalen in Nederlandse tijd — de server draait op UTC, waardoor
@@ -94,10 +93,11 @@ router.get('/daily', async (req, res) => {
         name: r.name,
         fleet: r.fleet,
         avatar_url: avatarUrl(req, r.user_id, r.avatar_v),
-        // Beste vijf van vandaag — zelfde functie als het seizoensklassement.
-        total_points: calculateTotalPoints(r.sessions),
+        // Je hoogst scorende losse sessie, niet de som.
+        total_points: Math.max(...r.sessions.map(s => parseFloat(s.points))),
         // Aantal en records gaan wél over alle sessies van vandaag: je beste
-        // sprong blijft je beste sprong, ook als hij niet meetelt voor punten.
+        // sprong blijft je beste sprong, ook als die sessie niet je hoogste
+        // score opleverde.
         sessions_count: r.sessions.length,
         max_height:   Math.max(...r.sessions.map(s => parseFloat(s.height_m))),
         max_airtime:  Math.max(...r.sessions.map(s => parseFloat(s.airtime_s))),

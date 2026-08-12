@@ -81,7 +81,7 @@ export default function App() {
             <Route path="/inloggen" element={<Login onLogin={zetGebruiker} />} />
             <Route path="/registreren" element={<Signup onLogin={zetGebruiker} />} />
             <Route path="/rijder/:id" element={<PublicProfile />} />
-            <Route path="/uploaden" element={<RequireAuth user={user}><Upload /></RequireAuth>} />
+            <Route path="/uploaden" element={<RequireAuth user={user}><Upload user={user} /></RequireAuth>} />
             <Route path="/profiel" element={<RequireAuth user={user}><Profile user={user} onUserUpdate={zetGebruiker} /></RequireAuth>} />
             <Route path="/beheer" element={<RequireAuth user={user}><AdminDashboard user={user} /></RequireAuth>} />
             {/* Legacy redirects */}

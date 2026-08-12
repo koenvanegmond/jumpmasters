@@ -53,7 +53,7 @@ export default function Leaderboards() {
       uitleg: `je ${feestweek.beste} beste sessies`,
       bijzonder: true,
     },
-    { key: 'Vandaag',  titel: 'Vandaag',  uitleg: 'je 5 beste van vandaag' },
+    { key: 'Vandaag',  titel: 'Vandaag',  uitleg: 'je beste sessie' },
     { key: 'Algeheel', titel: 'Seizoen',  uitleg: 'je 5 beste van het jaar' },
   ].filter(Boolean);
 
@@ -61,7 +61,7 @@ export default function Leaderboards() {
     Feestweek: feestweek
       ? `${datumKort(feestweek.van)} tot en met ${datumKort(feestweek.tot)}`
       : '',
-    Vandaag: 'Alleen de sessies van vandaag',
+    Vandaag: 'Wie scoorde vandaag de meeste punten met één sessie',
     Algeheel: 'Het hele seizoen bij elkaar',
   }[actief] || `Alleen rijders in de klasse ${actief}`;
 

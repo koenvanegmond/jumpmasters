@@ -34,6 +34,28 @@ async function updateUserFleet(userId) {
   await pool.query('UPDATE users SET fleet = $1 WHERE id = $2', [fleet, userId]);
 }
 
+// Is dit je hoogste sprong ooit, of je beste score ooit? Alleen zinvol voor
+// sessies die meteen meetellen; een handmatige sessie wacht nog op goedkeuring
+// en kan dus nog geen record zijn.
+async function bepaalRecord(userId, sessie) {
+  if (!sessie.verified) return null;
+  const r = await pool.query(
+    `SELECT MAX(height_m) AS hoogste, MAX(points) AS beste
+     FROM sessions
+     WHERE user_id = $1 AND verified = true AND id <> $2`,
+    [userId, sessie.id]
+  );
+  const vorigeHoogte = parseFloat(r.rows[0].hoogste) || 0;
+  const vorigeScore = parseFloat(r.rows[0].beste) || 0;
+
+  return {
+    hoogte: parseFloat(sessie.height_m) > vorigeHoogte,
+    punten: parseFloat(sessie.points) > vorigeScore,
+    vorige_hoogte: vorigeHoogte,
+    eerste_sessie: vorigeHoogte === 0
+  };
+}
+
 async function saveTags(sessionId, taggedUserIds, taggerName, taggerId) {
   if (!taggedUserIds || taggedUserIds.length === 0) return;
   for (const uid of taggedUserIds) {
@@ -129,7 +151,8 @@ router.post('/confirm', authenticate, upload.single('media'), async (req, res) =
     const tagIds = tagged_user_ids ? JSON.parse(tagged_user_ids) : [];
     await saveTags(session.id, tagIds, req.user.name, req.user.id);
     await updateUserFleet(req.user.id);
-    res.status(201).json({ session });
+    const record = await bepaalRecord(req.user.id, session);
+    res.status(201).json({ session, record });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });
@@ -164,7 +187,8 @@ router.post('/manual', authenticate, upload.single('media'), async (req, res) =>
     const tagIds = tagged_user_ids ? JSON.parse(tagged_user_ids) : [];
     await saveTags(session.id, tagIds, req.user.name, req.user.id);
     await updateUserFleet(req.user.id);
-    res.status(201).json({ session });
+    const record = await bepaalRecord(req.user.id, session);
+    res.status(201).json({ session, record });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfout' });
