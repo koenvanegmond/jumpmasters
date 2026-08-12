@@ -42,11 +42,8 @@ export default function FeestweekBlok({ periode, entries }) {
       <div className="relative">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-              Een keer per jaar
-            </p>
-            <h2 className="text-2xl font-black text-white leading-tight mt-0.5">
-              Feestweek 🎉
+            <h2 className="text-2xl font-black text-white leading-tight">
+              Feestweek editie 🎉
             </h2>
             <p className="text-sm text-white/85 mt-1">
               {datumKort(periode.van)} tot en met {datumKort(periode.tot)}.
@@ -54,11 +51,10 @@ export default function FeestweekBlok({ periode, entries }) {
             </p>
           </div>
           {komtEraan && (
-            <div className="flex-shrink-0 text-center rounded-xl px-3 py-2"
+            <div className="flex-shrink-0 rounded-xl px-3 py-2 text-center"
                  style={{ background: 'rgba(255,255,255,0.16)' }}>
-              <div className="text-2xl font-black text-white leading-none">{dagen}</div>
-              <div className="text-[10px] font-bold text-white/80 uppercase tracking-wider mt-0.5">
-                {dagen === 1 ? 'dag' : 'dagen'}
+              <div className="text-sm font-black text-white leading-tight">
+                Nog {dagen}<br />{dagen === 1 ? 'dag!' : 'dagen!'}
               </div>
             </div>
           )}
