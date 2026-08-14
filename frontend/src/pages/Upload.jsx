@@ -297,10 +297,7 @@ export default function Upload({ user }) {
           )}
           {scanToken && (
             <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
-              ✓ Screenshot uitgelezen. De hoogte, airtime en afstand staan vast, zo blijft de ranglijst eerlijk.
-              <span className="block text-emerald-400/70 mt-1">
-                Klopt er iets niet? Laat het de beheerder weten, die kan het aanpassen.
-              </span>
+              ✓ Foto succesvol uitgelezen
             </div>
           )}
 
@@ -309,7 +306,7 @@ export default function Upload({ user }) {
               📅 Wanneer was je sessie?
             </label>
             <p className="text-xs text-jm-muted mb-3 leading-relaxed">
-              Controleer goed dat de datum overeenkomt met je echte sessie. Veel mensen uploaden een dag later.
+              Check de datum: die moet matchen met je sessie.
             </p>
             <input type="date" required value={form.date}
               onChange={(e) => setForm(p => ({ ...p, date: e.target.value }))}
