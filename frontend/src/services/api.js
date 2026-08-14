@@ -81,8 +81,10 @@ export const api = {
 
   // Admin
   adminPending: () => request('/admin/sessions/pending'),
+  adminAllSessions: () => request('/admin/sessions'),
   adminVerify: (id, verified) => request(`/admin/sessions/${id}/verify`, { method: 'PATCH', body: JSON.stringify({ verified }) }),
   adminEditSession: (id, body) => request(`/admin/sessions/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  adminDeleteSession: (id) => request(`/admin/sessions/${id}`, { method: 'DELETE' }),
   adminStats: () => request('/admin/stats'),
   adminUsers: () => request('/admin/users')
 };

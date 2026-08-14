@@ -7,6 +7,38 @@ const router = express.Router();
 
 router.use(authenticate, requireAdmin);
 
+// De klasse hangt af van alle geverifieerde sessies van iemand, dus na elke
+// wijziging aan een sessie moet hij opnieuw bepaald worden.
+async function herbereken(userId) {
+  const sessies = await pool.query(
+    'SELECT height_m FROM sessions WHERE user_id = $1 AND verified = true',
+    [userId]
+  );
+  await pool.query('UPDATE users SET fleet = $1 WHERE id = $2', [determineFleet(sessies.rows), userId]);
+}
+
+// GET /api/admin/sessions — alles, nieuwste eerst. Hiermee kun je ook een
+// sessie terugvinden die al goedgekeurd is, bijvoorbeeld om een datum te
+// herstellen of een verzonnen score weg te halen.
+router.get('/sessions', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT s.id, s.date, s.height_m, s.airtime_s, s.distance_m, s.points,
+              s.verified, s.caption, s.created_at,
+              (s.screenshot_url IS NOT NULL) AS has_screenshot,
+              u.id AS user_id, u.name AS user_name, u.email AS user_email
+       FROM sessions s
+       JOIN users u ON u.id = s.user_id
+       ORDER BY s.date DESC, s.created_at DESC
+       LIMIT 500`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/admin/sessions/pending
 router.get('/sessions/pending', async (req, res) => {
   try {
@@ -48,12 +80,7 @@ router.patch('/sessions/:id/verify', async (req, res) => {
     // Klasse altijd opnieuw bepalen, ook bij afkeuren. Stond hier eerder
     // alleen bij goedkeuren, waardoor iemand in een hogere klasse bleef staan
     // nadat de sprong die hem daar bracht was afgewezen.
-    const userSessions = await pool.query(
-      'SELECT height_m FROM sessions WHERE user_id = $1 AND verified = true',
-      [session.user_id]
-    );
-    const fleet = determineFleet(userSessions.rows);
-    await pool.query('UPDATE users SET fleet = $1 WHERE id = $2', [fleet, session.user_id]);
+    await herbereken(session.user_id);
 
     res.json({ session });
   } catch (err) {
@@ -65,7 +92,7 @@ router.patch('/sessions/:id/verify', async (req, res) => {
 // PATCH /api/admin/sessions/:id  – edit session data
 router.patch('/sessions/:id', async (req, res) => {
   const { id } = req.params;
-  const { height, airtime, distance } = req.body;
+  const { height, airtime, distance, date } = req.body;
 
   if (!height || !airtime || !distance) {
     return res.status(400).json({ error: 'height, airtime, and distance are required' });
@@ -74,16 +101,43 @@ router.patch('/sessions/:id', async (req, res) => {
   const points = calculateSessionPoints(parseFloat(height), parseFloat(airtime), parseFloat(distance));
 
   try {
+    // De datum is optioneel: laat je hem weg, dan blijft de bestaande staan.
+    // Zo kan dit endpoint zowel een cijfercorrectie als een datumcorrectie zijn.
     const result = await pool.query(
-      'UPDATE sessions SET height_m = $1, airtime_s = $2, distance_m = $3, points = $4 WHERE id = $5 RETURNING *',
-      [height, airtime, distance, points, id]
+      `UPDATE sessions
+       SET height_m = $1, airtime_s = $2, distance_m = $3, points = $4,
+           date = COALESCE($5::date, date)
+       WHERE id = $6 RETURNING *`,
+      [height, airtime, distance, points, date || null, id]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Session not found' });
     }
 
+    // Een aangepaste hoogte kan iemand in een andere klasse zetten.
+    await herbereken(result.rows[0].user_id);
+
     res.json({ session: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/admin/sessions/:id — voor verzonnen sessies. Likes, reacties,
+// tags en meldingen hangen met ON DELETE CASCADE aan de sessie en gaan mee.
+router.delete('/sessions/:id', async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM sessions WHERE id = $1 RETURNING user_id', [req.params.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    await herbereken(result.rows[0].user_id);
+
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
