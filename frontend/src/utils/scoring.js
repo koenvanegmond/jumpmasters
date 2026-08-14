@@ -11,16 +11,6 @@ export function calculateSessionPoints(height, airtime, distance) {
   return Math.floor((n + 20) / 40) / 100;
 }
 
-export function calculateTotalPoints(sessions) {
-  const sorted = sessions
-    .filter(s => s.verified)
-    .sort((a, b) => b.points - a.points);
-
-  const top5 = sorted.slice(0, 5);
-  const total = top5.reduce((sum, s) => sum + parseFloat(s.points), 0);
-  return Math.round(total * 100) / 100;
-}
-
 export const FLEET_COLORS = {
   Bronze: { bg: 'bg-amber-700', text: 'text-white', hex: '#CD7F32' },
   Silver: { bg: 'bg-gray-400', text: 'text-white', hex: '#C0C0C0' },
