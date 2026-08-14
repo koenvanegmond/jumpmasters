@@ -297,20 +297,25 @@ export default function Upload({ user }) {
           )}
           {scanToken && (
             <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-4 py-3 rounded-xl">
-              ✓ Screenshot uitgelezen. Deze cijfers staan vast, zo blijft de ranglijst eerlijk.
+              ✓ Screenshot uitgelezen. De hoogte, airtime en afstand staan vast, zo blijft de ranglijst eerlijk.
               <span className="block text-emerald-400/70 mt-1">
                 Klopt er iets niet? Laat het de beheerder weten, die kan het aanpassen.
               </span>
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-white mb-1.5">Datum</label>
+          <div className="bg-jm-pink/10 border border-jm-pink/30 rounded-xl p-4">
+            <label className="block text-sm font-bold text-jm-pinkText mb-2">
+              📅 Wanneer was je sessie?
+            </label>
+            <p className="text-xs text-jm-muted mb-3 leading-relaxed">
+              Controleer goed dat de datum overeenkomt met je echte sessie. Veel mensen uploaden een dag later.
+            </p>
             <input type="date" required value={form.date}
               onChange={(e) => setForm(p => ({ ...p, date: e.target.value }))}
-              readOnly={!!scanToken} disabled={!!scanToken}
-              className={`input ${scanToken ? 'opacity-70 cursor-not-allowed' : ''}`} />
+              className="input w-full" />
           </div>
+
           <Field label="Hoogste sprong" value={form.height} onChange={setField('height')} unit="m" vast={!!scanToken} />
           <Field label="Max airtime" value={form.airtime} onChange={setField('airtime')} unit="s" vast={!!scanToken} />
           <Field label="Max afstand" value={form.distance} onChange={setField('distance')} unit="m" vast={!!scanToken} />
@@ -322,26 +327,11 @@ export default function Upload({ user }) {
             </div>
           )}
 
-          {/* Optioneel blok — ingeklapt, zodat alleen datum en de drie cijfers vooropstaan */}
-          <button type="button" onClick={() => setShowExtras(v => !v)}
-            className="w-full flex items-center justify-between text-sm text-jm-muted hover:text-white transition-colors border-t border-white/[0.07] pt-4">
-            <span>Bijschrift, foto en rijders taggen</span>
-            <span className="text-lg leading-none">{showExtras ? '−' : '+'}</span>
-          </button>
-
-          {showExtras && (
-          <>
           <div>
-            <label className="block text-sm font-medium text-white mb-1.5">Bijschrift (optioneel)</label>
-            <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={2}
-              placeholder="Vertel iets over je sessie..."
-              className="input resize-none" />
-          </div>
-
-          <TagInput tagged={tagged} onAdd={(u) => setTagged(p => [...p, u])} onRemove={(id) => setTagged(p => p.filter(u => u.id !== id))} />
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-1.5">Foto of video (optioneel)</label>
+            <label className="block text-sm font-bold text-white mb-1.5">📸 Foto of video</label>
+            <p className="text-xs text-jm-muted mb-3">
+              Voeg een foto of video van je sessie toe. Dit helpt andere rijders je sessie beter te begrijpen!
+            </p>
             {mediaPreview ? (
               <div className="relative rounded-xl overflow-hidden border border-white/[0.07]">
                 {mediaFile?.type.startsWith('video')
@@ -352,16 +342,34 @@ export default function Upload({ user }) {
               </div>
             ) : (
               <button type="button" onClick={() => mediaRef.current.click()}
-                className="w-full border-2 border-dashed border-white/10 hover:border-jm-pink/40 rounded-xl py-6 text-center text-jm-muted hover:text-jm-pinkText transition-colors text-sm">
-                <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                className="w-full border-2 border-dashed border-jm-pink/30 hover:border-jm-pink/60 rounded-xl py-8 text-center text-jm-muted hover:text-jm-pinkText transition-colors text-sm bg-jm-pink/5">
+                <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
                 </svg>
-                Foto of video toevoegen
+                <span className="font-medium">Foto of video toevoegen</span>
               </button>
             )}
             <input ref={mediaRef} type="file" accept="image/*,video/*" className="hidden"
               onChange={(e) => { if (e.target.files[0]) { setMediaFile(e.target.files[0]); setMediaPreview(URL.createObjectURL(e.target.files[0])); } }} />
           </div>
+
+          {/* Optioneel blok voor bijschrift en tags */}
+          <button type="button" onClick={() => setShowExtras(v => !v)}
+            className="w-full flex items-center justify-between text-sm text-jm-muted hover:text-white transition-colors border-t border-white/[0.07] pt-4">
+            <span>Bijschrift en rijders taggen (optioneel)</span>
+            <span className="text-lg leading-none">{showExtras ? '−' : '+'}</span>
+          </button>
+
+          {showExtras && (
+          <>
+          <div>
+            <label className="block text-sm font-medium text-white mb-1.5">Bijschrift</label>
+            <textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={2}
+              placeholder="Vertel iets over je sessie..."
+              className="input resize-none" />
+          </div>
+
+          <TagInput tagged={tagged} onAdd={(u) => setTagged(p => [...p, u])} onRemove={(id) => setTagged(p => p.filter(u => u.id !== id))} />
           </>
           )}
 
