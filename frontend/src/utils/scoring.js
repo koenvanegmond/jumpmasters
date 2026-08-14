@@ -1,6 +1,14 @@
+// Moet exact gelijk blijven aan backend/src/services/scoringService.js, anders
+// wijkt het puntenaantal dat je bij het uploaden ziet af van wat er wordt
+// opgeslagen. Zie daar voor waarom dit in hele getallen rekent.
 export function calculateSessionPoints(height, airtime, distance) {
-  const rawScore = (height * 2.5) + (airtime * 1.5) + (distance * 0.25);
-  return Math.round((rawScore / 10) * 100) / 100;
+  const h = Math.round(height * 100);
+  const a = Math.round(airtime * 100);
+  const d = Math.round(distance * 100);
+
+  const n = (h * 10) + (a * 6) + d;
+
+  return Math.floor((n + 20) / 40) / 100;
 }
 
 export function calculateTotalPoints(sessions) {
