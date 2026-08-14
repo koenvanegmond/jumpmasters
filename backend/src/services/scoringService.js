@@ -16,14 +16,19 @@ function calculateTotalPoints(sessions, aantalBeste = 5) {
   return Math.round(total * 100) / 100;
 }
 
+// Eén hoge sprong is geen bewijs, drie wel. Promotie naar een fleet vraagt
+// om drie verschillende sessies boven de drempel van die fleet, niet één
+// toevalstreffer.
+const PROMOTIE_DREMPEL = 3;
+
 function determineFleet(sessions) {
-  if (!sessions.length) return 'Bronze';
+  const heights = sessions.map(s => parseFloat(s.height_m));
 
-  const maxHeight = Math.max(...sessions.map(s => parseFloat(s.height_m)));
+  const boven = (drempel) => heights.filter(h => h >= drempel).length >= PROMOTIE_DREMPEL;
 
-  if (maxHeight >= 15) return 'Platinum';
-  if (maxHeight >= 10) return 'Gold';
-  if (maxHeight >= 5) return 'Silver';
+  if (boven(15)) return 'Platinum';
+  if (boven(10)) return 'Gold';
+  if (boven(5)) return 'Silver';
   return 'Bronze';
 }
 
